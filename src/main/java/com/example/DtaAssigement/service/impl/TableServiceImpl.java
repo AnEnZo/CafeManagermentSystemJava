@@ -5,6 +5,8 @@ import com.example.DtaAssigement.repository.TableRepository;
 import com.example.DtaAssigement.service.TableService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,11 +22,13 @@ public class TableServiceImpl implements TableService {
 
 
     @Override
+    @Cacheable(value = "tables", key = "'all'")
     public List<RestaurantTable> getAllTables() {
         return tableRepo.findAll();
     }
 
     @Override
+    @CacheEvict(value = "tables", allEntries = true)
     public RestaurantTable createTable(RestaurantTable table) {
 
         if (table.getId() != null) {
@@ -39,6 +43,7 @@ public class TableServiceImpl implements TableService {
     }
 
     @Override
+    @CacheEvict(value = "tables", allEntries = true)
     public RestaurantTable updateTableStatus(Long id, boolean available) {
         RestaurantTable table = tableRepo.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Table not found with id: " + id));
@@ -47,6 +52,7 @@ public class TableServiceImpl implements TableService {
     }
 
     @Override
+    @CacheEvict(value = "tables", allEntries = true)
     public boolean deleteTable(Long id){
         if(!tableRepo.existsById(id)){return false;}
         tableRepo.deleteById(id);

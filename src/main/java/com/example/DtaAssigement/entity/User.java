@@ -22,7 +22,8 @@ public class User {
     private String username;
     private String password;
     private String email;
-
+    private String phoneNumber;
+    private Integer rewardPoints;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -35,5 +36,9 @@ public class User {
     @JsonManagedReference
     private Set<Roles> roles = new HashSet<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    @Builder.Default
+    private Set<UserVoucher> userVouchers = new HashSet<>();
 
 }

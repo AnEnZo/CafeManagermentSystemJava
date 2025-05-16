@@ -10,13 +10,13 @@ import com.example.DtaAssigement.repository.RolesRepository;
 import com.example.DtaAssigement.repository.UserRepository;
 import com.example.DtaAssigement.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.DtaAssigement.entity.Roles;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,7 +30,7 @@ public class UserServiceImpl implements UserService {
     private RolesRepository roleRepository;
 
     @Autowired
-    private BCryptPasswordEncoder bcryptpasswordEncoder;
+    private PasswordEncoder passwordEncoder;
 
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream()
@@ -46,7 +46,7 @@ public class UserServiceImpl implements UserService {
 
     public UserDTO createUser(UserDTO userDTO) {
         // Mã hóa mật khẩu
-        String encodedPassword = bcryptpasswordEncoder.encode(userDTO.getPassword());
+        String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
         Roles userRole = roleRepository.findByName("ROLE_USER")
                 .orElseThrow(() -> new RuntimeException("Error: Role USER không tồn tại"));
 
@@ -57,16 +57,30 @@ public class UserServiceImpl implements UserService {
         return UserMapper.toDTO(userRepository.save(user));
     }
 
+    public UserDTO createStaff(UserDTO userDTO){
+        // Mã hóa mật khẩu
+        String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
+        Roles StaffRole = roleRepository.findByName("ROLE_STAFF")
+                .orElseThrow(() -> new RuntimeException("Error: Role STAFF không tồn tại"));
+
+        userDTO.setPassword(encodedPassword);
+
+        User user = UserMapper.toEntity(userDTO);
+        user.setRoles(Set.of(StaffRole));
+        return UserMapper.toDTO(userRepository.save(user));
+    }
+
     public UserDTO updateUser(Long id, UserDTO userDTO) {
 
         User user = userRepository.findById(id).orElse(null);
         if (user == null) return null;
 
         // Mã hóa mật khẩu
-        String encodedPassword = bcryptpasswordEncoder.encode(userDTO.getPassword());
+        String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
 
         user.setUsername(userDTO.getUsername());
         user.setEmail(userDTO.getEmail());
+        user.setPhoneNumber(userDTO.getPhoneNumber());
         user.setPassword(encodedPassword);
         return UserMapper.toDTO(userRepository.save(user));
     }
@@ -96,7 +110,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void registerNewUser(RegisterRequest registerRequest) {
         // Mã hóa mật khẩu
-        String encodedPassword = bcryptpasswordEncoder.encode(registerRequest.getPassword());
+        String encodedPassword = passwordEncoder.encode(registerRequest.getPassword());
         Roles userRole = roleRepository.findByName("ROLE_USER")
                 .orElseThrow(() -> new RuntimeException("Error: Role USER không tồn tại"));
 
@@ -104,12 +118,26 @@ public class UserServiceImpl implements UserService {
                 .username(registerRequest.getUsername())
                 .password(encodedPassword)
                 .email(registerRequest.getEmail())
+                .phoneNumber(registerRequest.getPhoneNumber())
+                .rewardPoints(0)
                 .roles(Set.of(userRole)) // gán role mặc định
                 .build();
 
         // Lưu người dùng vào cơ sở dữ liệu
         userRepository.save(user);
     }
+    public Optional<User> findByEmail(String email){
+        return userRepository.findByEmail(email);
+    }
+
+    public void updatePassword(User user, String rawPassword) {
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        userRepository.save(user);
+    }
+    public Optional<User> findByUsername(String username){
+        return userRepository.findByUsername(username);
+    }
+
 
 
 }

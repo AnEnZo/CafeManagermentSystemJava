@@ -20,6 +20,12 @@ public class Invoice {
 
     private LocalDateTime paymentTime;
 
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "voucher_id")
+    private Voucher voucher;
+
+    private double originalAmount;
+    private double discountAmount;
     private double totalAmount;
 
     @OneToOne
@@ -32,4 +38,6 @@ public class Invoice {
 
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
+
+
 }

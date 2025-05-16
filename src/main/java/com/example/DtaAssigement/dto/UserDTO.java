@@ -29,4 +29,8 @@ public class UserDTO {
     @Email(message = "Email không hợp lệ")
     @NotBlank(message = "Email không được để trống")
     private String email;
+
+    @NotBlank(message = "SĐT không được để trống")
+    @Pattern(regexp = "^[0-9]{11}$", message = "SĐT không hợp lệ, vui lòng nhập lại")
+    private String phoneNumber;
 }

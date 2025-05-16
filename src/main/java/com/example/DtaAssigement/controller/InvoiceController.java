@@ -50,9 +50,11 @@ public class InvoiceController {
     @PostMapping
     @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
     public ResponseEntity<Invoice> createInvoice(@RequestParam Long orderId,
+                                                 @RequestParam(required = false) String voucherCode,
                                                  @RequestParam Long cashierId,
-                                                 @RequestParam PaymentMethod paymentMethod){
-        return ResponseEntity.ok(invoiceService.createInvoice(orderId, cashierId, paymentMethod));
+                                                 @RequestParam PaymentMethod paymentMethod,
+                                                 @RequestParam(required = false) String phoneNumber){
+        return ResponseEntity.ok(invoiceService.createInvoice(orderId,voucherCode, cashierId, paymentMethod, phoneNumber));
     }
 
     @DeleteMapping

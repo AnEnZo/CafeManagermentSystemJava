@@ -9,7 +9,9 @@ import java.util.List;
 public interface OrderService {
     Order createOrder(Long tableId);
     OrderItem addItemToOrder(Long orderId, Long menuItemId, int quantity);
-    List<Order> getOrdersByStatus(String status);
+    OrderItem removeItemFromOrder(Long orderId, Long menuItemId, int quantityToRemove);
+    List<Order> getOrdersByStatus(OrderStatus status);
+    List<Order> getAllOrders();
     boolean deleteOrder(Long id);
     Order updateOrderStatus(Long orderId, OrderStatus status);
 }

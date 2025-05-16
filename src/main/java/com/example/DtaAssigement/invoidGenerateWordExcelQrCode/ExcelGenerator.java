@@ -1,7 +1,9 @@
 package com.example.DtaAssigement.invoidGenerateWordExcelQrCode;
 
+
 import com.example.DtaAssigement.entity.Invoice;
 import com.example.DtaAssigement.entity.OrderItem;
+import com.example.DtaAssigement.entity.Voucher;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -38,8 +40,9 @@ public class ExcelGenerator {
                     "Thời gian thanh toán",
                     "Nhân viên thu ngân",
                     "Phương thức thanh toán",
-                    "Trạng thái đơn",
-                    "Số bàn",
+                    "Voucher",
+                    "Tiền gốc",
+                    "Giảm giá",
                     "Tổng tiền"
             };
             // Header row
@@ -63,13 +66,32 @@ public class ExcelGenerator {
 
             dataRow.createCell(c++).setCellValue(invoice.getCashier().getUsername());
             dataRow.createCell(c++).setCellValue(invoice.getPaymentMethod().name());
-            dataRow.createCell(c++).setCellValue(invoice.getOrder().getStatus().name());
-            dataRow.createCell(c++).setCellValue(invoice.getOrder().getTable().getName());
 
+            // Voucher (if any)
+            Voucher voucher = invoice.getVoucher();
+            if (voucher != null) {
+                // Assuming Voucher has a 'code' field; adjust if different
+                dataRow.createCell(c++).setCellValue(voucher.getCode());
+            } else {
+                dataRow.createCell(c++).setCellValue("");
+            }
+
+            // Original amount
+            Cell origCell = dataRow.createCell(c++);
+            origCell.setCellValue(invoice.getOriginalAmount());
+            origCell.setCellStyle(currencyStyle);
+
+            // Discount amount
+            Cell discountCell = dataRow.createCell(c++);
+            discountCell.setCellValue(invoice.getDiscountAmount());
+            discountCell.setCellStyle(currencyStyle);
+
+            // Total amount
             Cell totalCell = dataRow.createCell(c++);
             totalCell.setCellValue(invoice.getTotalAmount());
             totalCell.setCellStyle(currencyStyle);
 
+            // Auto-size columns
             for (int i = 0; i < headers.length; i++) {
                 sheet.autoSizeColumn(i);
             }

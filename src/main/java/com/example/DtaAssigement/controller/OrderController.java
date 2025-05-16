@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 
 @RestController
@@ -42,11 +43,35 @@ public class OrderController {
         return ResponseEntity.ok(item);
     }
 
-    // Lấy danh sách đơn hàng theo trạng thái
+    @DeleteMapping("/{orderId}/items")
+    @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
+    public ResponseEntity<?> removeItem(
+            @PathVariable Long orderId,
+            @RequestParam Long menuItemId,
+            @RequestParam int quantity
+    ) {
+        try {
+            OrderItem updatedItem = orderService.removeItemFromOrder(orderId, menuItemId, quantity);
+            if (updatedItem == null) {
+                return ResponseEntity.noContent().build(); // đã xoá item khỏi đơn
+            }
+            return ResponseEntity.ok(updatedItem); // giảm số lượng còn > 0
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+
+    @GetMapping("/status")
+    @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
+    public ResponseEntity<List<Order>> getByStatus(@RequestParam OrderStatus status) {
+        List<Order> orders = orderService.getOrdersByStatus(status);
+        return ResponseEntity.ok(orders);
+    }
     @GetMapping
     @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
-    public ResponseEntity<List<Order>> getByStatus(@RequestParam String status) {
-        List<Order> orders = orderService.getOrdersByStatus(status);
+    public ResponseEntity<List<Order>> getAllOrder() {
+        List<Order> orders = orderService.getAllOrders();
         return ResponseEntity.ok(orders);
     }
 

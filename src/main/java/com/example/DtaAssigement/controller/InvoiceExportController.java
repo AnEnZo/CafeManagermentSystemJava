@@ -37,14 +37,22 @@ public class InvoiceExportController {
 
     @GetMapping("/{invoiceId}/export/word")
     @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
-    public ResponseEntity<byte[]> exportToWord(@PathVariable Long invoiceId) throws IOException {
+    public ResponseEntity<byte[]> exportToWord(
+            @PathVariable Long invoiceId
+    ) throws IOException {
         Invoice invoice = invoiceService.findById(invoiceId);
-        byte[] bytes = WordGenerator.generateInvoiceWord(invoice);
+        byte[] bytes;
+        try {
+            bytes = WordGenerator.generateInvoiceWord(invoice);
+        } catch (org.apache.poi.openxml4j.exceptions.InvalidFormatException e) {
+            throw new IOException("Lỗi khi sinh file Word", e);
+        }
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=invoice-" + invoiceId + ".docx")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(bytes);
     }
+
 
 }

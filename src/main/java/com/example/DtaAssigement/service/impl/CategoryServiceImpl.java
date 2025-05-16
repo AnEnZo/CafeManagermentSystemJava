@@ -4,6 +4,8 @@ import com.example.DtaAssigement.entity.Category;
 import com.example.DtaAssigement.repository.CategoryRepository;
 import com.example.DtaAssigement.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,21 +22,25 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Cacheable(value = "categories", key = "'all'")
     public List<Category> getAllCategories() {
         return repository.findAll();
     }
 
     @Override
+    @Cacheable(value = "category", key = "#id")
     public Optional<Category> getCategoryById(Long id) {
         return repository.findById(id);
     }
 
     @Override
+    @CacheEvict(value = "categories", allEntries = true)  // Evict cache for all categories when a category is created
     public Category createCategory(Category category) {
         return repository.save(category);
     }
 
     @Override
+    @CacheEvict(value = "category", key = "#id")  // Evict the cache for the updated category by its id
     public Category updateCategory(Long id, Category category) {
         return repository.findById(id)
                 .map(existing -> {
@@ -45,7 +51,10 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @CacheEvict(value = "category", key = "#id")  // Evict the cache for the deleted category by its id
     public void deleteCategory(Long id) {
         repository.deleteById(id);
     }
+
+
 }

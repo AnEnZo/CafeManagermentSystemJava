@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface InvoiceService {
-    Invoice createInvoice(Long orderId, Long cashierId, PaymentMethod paymentMethod);
+    Invoice createInvoice(Long orderId, String voucherCode, Long cashierId, PaymentMethod paymentMethod, String phoneNumber);
     boolean deleteInvoice(Long id);
     Optional<Invoice> getInvoiceById(Long id);
     Invoice findById(Long id);

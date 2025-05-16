@@ -1,7 +1,6 @@
 package com.example.DtaAssigement.service.impl;
 
 import com.example.DtaAssigement.dto.ItemStatsDTO;
-import com.example.DtaAssigement.dto.RevenueDTO;
 import com.example.DtaAssigement.repository.InvoiceRepository;
 import com.example.DtaAssigement.repository.OrderItemRepository;
 import com.example.DtaAssigement.repository.OrderRepository;
@@ -17,28 +16,13 @@ import java.util.List;
 @AllArgsConstructor
 public class StatsServiceImpl implements StatsService {
 
-    private final InvoiceRepository invoiceRepo;
     private final OrderItemRepository orderItemRepo;
-    private final OrderRepository orderRepo;
-
-
-
-    @Override
-    public List<RevenueDTO> getDailyRevenue() {
-        return invoiceRepo.findDailyRevenue();
-    }
-
-    @Override
-    public List<RevenueDTO> getMonthlyRevenue() {
-        return invoiceRepo.findMonthlyRevenue();
-    }
 
     @Override
     public List<ItemStatsDTO> getTopSellingItems(int topN) {
         Page<ItemStatsDTO> topItemsPage = orderItemRepo.findTopSellingItems(PageRequest.of(0, topN));
         return topItemsPage.getContent();  // Lấy danh sách ItemStatsDTO từ Page
     }
-
 
 
 }

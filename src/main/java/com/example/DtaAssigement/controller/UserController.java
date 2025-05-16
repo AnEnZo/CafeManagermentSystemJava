@@ -35,7 +35,7 @@ public class UserController {
         return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
     }
 
-    @PostMapping
+    @PostMapping("/user")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createUser(@Valid @RequestBody UserDTO userDTO) {
         if (userService.existsByUsername(userDTO.getUsername())) {
@@ -48,6 +48,22 @@ public class UserController {
                     .body("Error: Email is already in use!");
         }
         UserDTO created = userService.createUser(userDTO);
+        return ResponseEntity.status(201).body(created);
+    }
+
+    @PostMapping("/staff")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> createStaff(@Valid @RequestBody UserDTO userDTO) {
+        if (userService.existsByUsername(userDTO.getUsername())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Error: Username is already taken!");
+        }
+
+        if (userService.existsByEmail(userDTO.getEmail())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Error: Email is already in use!");
+        }
+        UserDTO created = userService.createStaff(userDTO);
         return ResponseEntity.status(201).body(created);
     }
 
