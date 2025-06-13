@@ -1,10 +1,14 @@
 package com.example.DtaAssigement.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 
 @Entity
@@ -24,11 +28,18 @@ public class MenuItem {
     private String name;
 
     @Positive(message = "Giá món phải lớn hơn 0")
-    private double price;
+    @Column(precision = 12, scale = 2)
+    private BigDecimal price;
+
 
     @ManyToOne
     @JsonBackReference
     @JoinColumn(name = "category_id", nullable = false)
     @NotNull(message = "Danh mục món ăn không được để trống")
     private Category category;
+
+    @OneToMany(mappedBy = "menuItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<MenuItemIngredient> menuingredients;
+
 }

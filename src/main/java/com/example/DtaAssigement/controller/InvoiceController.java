@@ -8,6 +8,12 @@ import com.example.DtaAssigement.repository.OrderRepository;
 import com.example.DtaAssigement.service.InvoiceService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.AllArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +23,8 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -34,8 +42,31 @@ public class InvoiceController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('STAFF','ADMIN','USER')")
-    public List<Invoice> getAllInvoice(){
-        return invoiceService.getAllInvoice();
+    public Page<Invoice> getAllInvoice(
+            @ParameterObject
+            @PageableDefault(
+                    page = 0,
+                    size = 10,
+                    sort = "paymentTime",
+                    direction = Sort.Direction.DESC
+            ) Pageable pageable
+    ) {
+        return invoiceService.getAllInvoice(pageable);
+    }
+
+    @GetMapping("/by-branch")
+    @PreAuthorize("hasAnyRole('STAFF','ADMIN','USER')")
+    public Page<Invoice> getAllInvoiceByBranch(
+            @RequestParam Long branchId,
+            @ParameterObject
+            @PageableDefault(
+                    page = 0,
+                    size = 10,
+                    sort = "paymentTime",
+                    direction = Sort.Direction.DESC
+            ) Pageable pageable
+    ) {
+        return invoiceService.getAllInvoiceByBranch(branchId, pageable);
     }
 
     @GetMapping("/{invoiceId}")
@@ -71,9 +102,12 @@ public class InvoiceController {
         Order order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new NoSuchElementException("Order not found: " + orderId));
 
-        double total = order.getOrderItems().stream()
-                .mapToDouble(item -> item.getMenuItem().getPrice() * item.getQuantity())
-                .sum();
+        BigDecimal total = order.getOrderItems().stream()
+                .map(item -> item.getMenuItem().getPrice()
+                        .multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, RoundingMode.HALF_UP);
+
 
         String accountNumber = "0564870803";
         String accountName = "DINH TUAN AN";

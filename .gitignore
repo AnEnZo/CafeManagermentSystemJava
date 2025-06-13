@@ -19,6 +19,23 @@ target/
 *.iml
 *.ipr
 
+# === Maven ===
+/target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+
+# === Spring Boot secrets ===
+.env
+*.env
+application-secret.properties
+src/main/resources/application-prod.properties
+src/main/resources/application-*.properties
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/

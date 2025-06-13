@@ -4,6 +4,11 @@ import com.example.DtaAssigement.dto.UserDTO;
 import com.example.DtaAssigement.service.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.*;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,9 +29,18 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserDTO>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<Page<UserDTO>> getAllUsers(
+            @ParameterObject
+            @PageableDefault(
+                    page = 0,
+                    size = 10,
+                    sort = "id",
+                    direction = Sort.Direction.DESC
+            ) Pageable pageable
+    ) {
+        return ResponseEntity.ok(userService.getAllUsers(pageable));
     }
+
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
@@ -53,7 +67,7 @@ public class UserController {
 
     @PostMapping("/staff")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> createStaff(@Valid @RequestBody UserDTO userDTO) {
+    public ResponseEntity<?> createStaff(@Valid @RequestBody UserDTO userDTO, @RequestParam Long branchID) {
         if (userService.existsByUsername(userDTO.getUsername())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Error: Username is already taken!");
@@ -63,14 +77,15 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Error: Email is already in use!");
         }
-        UserDTO created = userService.createStaff(userDTO);
+        UserDTO created = userService.createStaff(userDTO, branchID);
         return ResponseEntity.status(201).body(created);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @Valid @RequestBody UserDTO userDTO) {
-        UserDTO updated = userService.updateUser(id, userDTO);
+    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @Valid @RequestBody UserDTO userDTO,
+                                              @RequestParam(value = "branchID", required = false) Long branchID) {
+        UserDTO updated = userService.updateUser(id, userDTO, branchID);
         return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }
 

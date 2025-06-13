@@ -25,4 +25,10 @@ public class RestaurantTable {
     private String name;
 
     private boolean available;
+
+    private int capacity;
+
+    @ManyToOne
+    @JoinColumn(name = "branch_id", nullable = false)
+    private Branch branch;
 }

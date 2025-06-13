@@ -14,6 +14,10 @@ public class UserDTO {
     @Schema(hidden = true)
     private Long id;
 
+    @NotBlank(message = "Username is mandatory")
+    @Size(min = 3, max = 50)
+    private String displayName;
+
     @NotBlank(message = "Username không được để trống")
     @Size(min = 6, max = 50, message = "Username phải từ 3 đến 50 ký tự")
     private String username;

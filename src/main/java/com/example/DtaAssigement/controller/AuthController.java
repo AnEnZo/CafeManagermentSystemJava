@@ -1,5 +1,6 @@
 package com.example.DtaAssigement.controller;
 
+import com.example.DtaAssigement.ennum.AuthProvider;
 import com.example.DtaAssigement.entity.User;
 import com.example.DtaAssigement.payload.JwtResponse;
 import com.example.DtaAssigement.payload.LoginRequest;
@@ -31,6 +32,8 @@ public class AuthController {
 
     private UserService userService;
 
+    private UserRepository userRepository;
+
     private AuthenticationManager authenticationManager;
 
     private JwtTokenUtil jwtTokenUtil;
@@ -43,6 +46,15 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        User user = userRepository.findByUsername(loginRequest.getUsername())
+                .orElse(null);
+        if (user == null || user.getProvider() != AuthProvider.LOCAL) {
+            return ResponseEntity.status(403).body("Invalid username or password");
+        }
+        if (user.getProvider() != AuthProvider.LOCAL) {
+            return ResponseEntity.status(403).body("account not exit! ");
+        }
+
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(

@@ -2,6 +2,8 @@ package com.example.DtaAssigement.service;
 
 import com.example.DtaAssigement.ennum.PaymentMethod;
 import com.example.DtaAssigement.entity.Invoice;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,5 +13,7 @@ public interface InvoiceService {
     boolean deleteInvoice(Long id);
     Optional<Invoice> getInvoiceById(Long id);
     Invoice findById(Long id);
-    List<Invoice> getAllInvoice();
+    Page<Invoice> getAllInvoice(Pageable pageable);
+    Page<Invoice> getAllInvoiceByBranch(Long branchId, Pageable pageable);
+
 }

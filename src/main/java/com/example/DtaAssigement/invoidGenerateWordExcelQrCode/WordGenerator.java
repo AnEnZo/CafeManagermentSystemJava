@@ -1,8 +1,10 @@
 package com.example.DtaAssigement.invoidGenerateWordExcelQrCode;
 
+import com.example.DtaAssigement.entity.Branch;
 import com.example.DtaAssigement.entity.Invoice;
 import com.example.DtaAssigement.entity.OrderItem;
 import com.example.DtaAssigement.ennum.PaymentMethod;
+import com.example.DtaAssigement.entity.SalaryRecord;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.xwpf.usermodel.*;
 import org.apache.poi.util.Units;
@@ -25,17 +27,20 @@ public class WordGenerator {
 
             DecimalFormat currencyFormat = new DecimalFormat("###,###");
 
+            Branch branch = invoice.getCashier().getBranch();
+
             // Company Header
             XWPFParagraph header = doc.createParagraph();
             header.setAlignment(ParagraphAlignment.CENTER);
             XWPFRun runHeader = header.createRun();
             runHeader.setBold(true);
             runHeader.setFontSize(14);
-            runHeader.setText("THE COFFE HOUSE");
+            runHeader.setText(branch.getName());
             runHeader.addBreak();
-            runHeader.setText("số 6 ngõ 82 Duy Tân ,Cầu Giấy, Hà Nội");
+            runHeader.setText(branch.getAddress() != null ? branch.getAddress() : "");
             runHeader.addBreak();
-            runHeader.setText("Phone: 0123 456 789");
+            runHeader.setText("Phone: " + (branch.getPhone() != null ? branch.getPhone() : ""));
+
 
             // Invoice Title
             XWPFParagraph title = doc.createParagraph();
@@ -91,7 +96,7 @@ public class WordGenerator {
                 row.getCell(0).setText(item.getMenuItem().getName());
                 row.getCell(1).setText(String.valueOf(item.getQuantity()));
                 row.getCell(2).setText(currencyFormat.format(item.getMenuItem().getPrice()));
-                double lineTotal = item.getQuantity() * item.getMenuItem().getPrice();
+                double lineTotal = item.getQuantity() * item.getMenuItem().getPrice().doubleValue();
                 row.getCell(3).setText(currencyFormat.format(lineTotal));
             }
 
@@ -130,7 +135,7 @@ public class WordGenerator {
     }
 
     private static byte[] fetchQrCode(Invoice invoice) throws IOException {
-        double amount = invoice.getTotalAmount();
+        double amount = invoice.getTotalAmount().doubleValue();
         String accountNumber = "0564870803";
         String accountName = "DINH TUAN AN";
         String acqId = "970422";
@@ -192,4 +197,53 @@ public class WordGenerator {
         r.setFontSize(12);
         r.setText(text);
     }
+
+    public static void exportSalaryRecords(List<SalaryRecord> records, OutputStream os) throws Exception {
+        try (XWPFDocument doc = new XWPFDocument()) {
+            // Tiêu đề
+            XWPFParagraph title = doc.createParagraph();
+            title.setAlignment(ParagraphAlignment.CENTER);
+            XWPFRun run = title.createRun();
+            run.setText("Bảng lương nhân viên");
+            run.setBold(true);
+            run.setFontSize(16);
+
+            // Tạo bảng: header + n dòng data, 7 cột
+            XWPFTable table = doc.createTable(records.size() + 1, 7);
+
+            // Header
+            XWPFTableRow header = table.getRow(0);
+            header.getCell(0).setText("Tên nhân viên");
+            header.getCell(1).setText("Tháng");
+            header.getCell(2).setText("Lương gộp");
+            header.getCell(3).setText("Ngày nghỉ");
+            header.getCell(4).setText("Số lần đi muộn");
+            header.getCell(5).setText("Số lần tăng ca");
+            header.getCell(6).setText("Lương thực nhận");
+
+            // Data
+            for (int i = 0; i < records.size(); i++) {
+                SalaryRecord r = records.get(i);
+                XWPFTableRow row = table.getRow(i + 1);
+
+                // Lấy tên nhân viên từ SalaryRecord → Employee
+                String employeeName = r.getEmployee().getFullName(); // hoặc getName(), tuỳ tên getter
+                row.getCell(0).setText(employeeName);
+                row.getCell(1).setText(r.getMonth().toString());
+                row.getCell(2).setText(r.getGrossSalary().toString());
+                row.getCell(3).setText(String.valueOf(r.getDaysOff()));
+                row.getCell(4).setText(String.valueOf(r.getLateCount()));
+                row.getCell(5).setText(String.valueOf(r.getOvertimeCount()));
+                row.getCell(6).setText(r.getNetSalary().toString());
+            }
+
+            // Ghi ra OutputStream
+            doc.write(os);
+        }
+    }
+
+
+
+
+
 }

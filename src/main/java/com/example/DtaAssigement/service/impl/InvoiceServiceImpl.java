@@ -8,8 +8,12 @@ import com.example.DtaAssigement.service.InvoiceService;
 import com.example.DtaAssigement.service.RevenueService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -45,12 +49,12 @@ public class InvoiceServiceImpl implements InvoiceService {
 //        double originalAmount = order.getOrderItems().stream()
 //                .mapToDouble(item -> item.getMenuItem().getPrice() * item.getQuantity())
 //                .sum();
-        double originalAmount=orderItemRepo.calculateOrderTotalAmount(orderId);
+        BigDecimal originalAmount=orderItemRepo.calculateOrderTotalAmount(orderId);
 
         // Xử lý voucher nếu có
         UserVoucher userVoucher = null;
         Voucher voucher = null;
-        double discountAmount = 0;
+        BigDecimal discountAmount = BigDecimal.ZERO;
 
         if (voucherCode != null && !voucherCode.isEmpty()) {
             userVoucher = userVoucherRepo.findByCode(voucherCode)
@@ -70,12 +74,14 @@ public class InvoiceServiceImpl implements InvoiceService {
             if (voucher.isActive()) {
                 switch (voucher.getType()) {
                     case PERCENTAGE_DISCOUNT:
-                        if (originalAmount >= voucher.getMinOrderAmount()) {
-                            discountAmount = originalAmount * (voucher.getDiscountValue() / 100d);
+                        if (originalAmount.compareTo(voucher.getMinOrderAmount()) >= 0) {
+                            BigDecimal percent = voucher.getDiscountValue()
+                                    .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+                            discountAmount = originalAmount.multiply(percent).setScale(2, RoundingMode.HALF_UP);
                         }
                         break;
                     case FIXED_DISCOUNT:
-                        if (originalAmount >= voucher.getMinOrderAmount()) {
+                        if (originalAmount.compareTo(voucher.getMinOrderAmount()) >= 0) {
                             discountAmount = voucher.getDiscountValue();
                         }
                         break;
@@ -86,7 +92,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                         }
                         break;
                 }
-                if (discountAmount > originalAmount) {
+                if (discountAmount.compareTo(originalAmount) > 0) {
                     discountAmount = originalAmount;
                 }
                 // Đánh dấu voucher đã dùng
@@ -99,7 +105,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
 
         // Tính thành tiền cuối cùng
-        double totalAmount = originalAmount - discountAmount;
+        BigDecimal totalAmount =  originalAmount.subtract(discountAmount).setScale(2, RoundingMode.HALF_UP);
 
 
         // Xây dựng hóa đơn
@@ -124,7 +130,11 @@ public class InvoiceServiceImpl implements InvoiceService {
             // Cộng điểm thưởng: 1 điểm = 1000đ
             User customer = userRepo.findByPhoneNumber(phoneNumber)
                     .orElseThrow(() -> new NoSuchElementException("Customer not found: " + phoneNumber));
-            int pointsEarned = (int) Math.floor(totalAmount / 1000);
+
+            int pointsEarned = totalAmount
+                    .divide(BigDecimal.valueOf(1000), 0, RoundingMode.FLOOR) // Làm tròn xuống
+                    .intValue();
+
             customer.setRewardPoints(
                     (customer.getRewardPoints() == null ? 0 : customer.getRewardPoints()) + pointsEarned
             );
@@ -135,7 +145,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         revenueService.recordRevenue(
                 invoice.getPaymentTime().toLocalDate(),
                 paymentMethod,
-                invoice.getTotalAmount()
+                invoice.getTotalAmount(),
+                invoice.getCashier().getBranch().getId()
         );
 
         return invoiceRepo.save(invoice);
@@ -152,21 +163,30 @@ public class InvoiceServiceImpl implements InvoiceService {
             revenueService.recordRevenue(
                     invoice.getPaymentTime().toLocalDate(),
                     invoice.getPaymentMethod(),
-                    - invoice.getTotalAmount()
+                    invoice.getTotalAmount().negate(),
+                    invoice.getCashier().getBranch().getId()
             );
             return true;
         }
 
+        @Override
         public Optional<Invoice> getInvoiceById(Long id){
         return invoiceRepo.findById(id);
         }
+
+        @Override
         public Invoice findById(Long id){
         return invoiceRepo.findById(id).orElseThrow(()->new NoSuchElementException("Invoice not found: "+id));
         }
 
-        public List<Invoice> getAllInvoice(){
-        return invoiceRepo.findAll();
+        @Override
+        public Page<Invoice> getAllInvoice(Pageable pageable) {
+        return invoiceRepo.findAll(pageable);
         }
 
+    @Override
+    public Page<Invoice> getAllInvoiceByBranch(Long branchId, Pageable pageable) {
+        return invoiceRepo.findByCashier_Branch_Id(branchId, pageable);
+    }
 
 }

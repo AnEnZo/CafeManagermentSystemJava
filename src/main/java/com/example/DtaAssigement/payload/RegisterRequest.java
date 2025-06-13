@@ -11,6 +11,11 @@ import jakarta.validation.constraints.Size;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RegisterRequest {
+
+    @NotBlank(message = "displayname is mandatory")
+    @Size(min = 3, max = 50)
+    private String displayName;
+
     @NotBlank(message = "Username is mandatory")
     @Size(min = 3, max = 50)
     private String username;

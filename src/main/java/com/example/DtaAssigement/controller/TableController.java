@@ -1,5 +1,6 @@
 package com.example.DtaAssigement.controller;
 
+import com.example.DtaAssigement.dto.RestaurantTableDTO;
 import com.example.DtaAssigement.entity.RestaurantTable;
 import com.example.DtaAssigement.service.TableService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -9,7 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -23,16 +26,16 @@ public class TableController {
     // Xem danh sách bàn
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
-    public ResponseEntity<List<RestaurantTable>> getAllTables() {
-        List<RestaurantTable> tables = tableService.getAllTables();
+    public ResponseEntity<List<RestaurantTableDTO>> getAllTables() {
+        List<RestaurantTableDTO> tables = tableService.getAllTables();
         return ResponseEntity.ok(tables);
     }
 
     // Tạo bàn mới
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
-    public ResponseEntity<RestaurantTable> createTable( @Valid @RequestBody RestaurantTable table) {
-        RestaurantTable created = tableService.createTable(table);
+    public ResponseEntity<RestaurantTableDTO> createTable( @Valid @RequestBody RestaurantTableDTO tableDTO) {
+        RestaurantTableDTO created = tableService.createTable(tableDTO);
         return ResponseEntity.ok(created);
     }
 
@@ -46,9 +49,24 @@ public class TableController {
 
     @DeleteMapping
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<RestaurantTable> deleteTable(@PathVariable Long id){
+    public ResponseEntity<RestaurantTableDTO> deleteTable(@PathVariable Long id){
         boolean deleted = tableService.deleteTable(id);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/stats")
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+    public ResponseEntity<Map<String, Long>> getTableStatistics(@RequestParam String branchName) {
+        Map<String, Long> stats = new HashMap<>();
+        stats.put("totalTables", tableService.getTotalTables(branchName));
+        stats.put("availableTables", tableService.getAvailableTables(branchName));
+        return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/available")
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+    public ResponseEntity<List<RestaurantTableDTO>> getAvailableTables(@RequestParam String branchName) {
+        return ResponseEntity.ok(tableService.getListAvailableTables(branchName));
     }
 
 }

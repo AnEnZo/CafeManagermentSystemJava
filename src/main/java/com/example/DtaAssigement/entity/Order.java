@@ -1,6 +1,8 @@
 package com.example.DtaAssigement.entity;
 
 import com.example.DtaAssigement.ennum.OrderStatus;
+import com.example.DtaAssigement.ennum.OrderType;
+import com.example.DtaAssigement.validation.OnCreate;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -32,9 +34,13 @@ public class Order {
     private OrderStatus status;
 
     @ManyToOne
-    @JoinColumn(name = "table_id", nullable = false)
-    @NotNull(message = "Table is required")
+    @JoinColumn(name = "table_id",nullable = true)
+    @NotNull(message = "Table is required", groups = OnCreate.class)
     private RestaurantTable table;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OrderType orderType;
 
     @ManyToOne
     @JoinColumn(name = "staff_id", nullable = false)
@@ -43,4 +49,5 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<OrderItem> orderItems;
+
 }

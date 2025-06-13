@@ -1,13 +1,21 @@
 package com.example.DtaAssigement.controller;
 
+import com.example.DtaAssigement.dto.OrderCreateDTO;
 import com.example.DtaAssigement.entity.Order;
 import com.example.DtaAssigement.entity.OrderItem;
 import com.example.DtaAssigement.ennum.OrderStatus;
 import com.example.DtaAssigement.service.OrderService;
+import com.example.DtaAssigement.validation.OnCreate;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.AllArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,12 +30,17 @@ public class OrderController {
 
     private final OrderService orderService;
 
-
-    // Tạo đơn hàng mới (PENDING)
     @PostMapping
     @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
-    public ResponseEntity<Order> createOrder(@RequestParam Long tableId) {
-        Order order = orderService.createOrder(tableId);
+    public ResponseEntity<Order> createOrder(@Validated(OnCreate.class) @RequestBody OrderCreateDTO dto) {
+        Order order = orderService.createOrder(dto.getTableId());
+        return ResponseEntity.ok(order);
+    }
+
+    @PostMapping("/takeaway")
+    @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
+    public ResponseEntity<Order> createTakeaway() {
+        Order order = orderService.createTakeawayOrder();
         return ResponseEntity.ok(order);
     }
 
@@ -68,12 +81,38 @@ public class OrderController {
         List<Order> orders = orderService.getOrdersByStatus(status);
         return ResponseEntity.ok(orders);
     }
+
     @GetMapping
     @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
-    public ResponseEntity<List<Order>> getAllOrder() {
-        List<Order> orders = orderService.getAllOrders();
+    public ResponseEntity<Page<Order>> getAllOrders(
+            @ParameterObject
+            @PageableDefault(
+                    page = 0,
+                    size = 10,
+                    sort = "orderTime", // hoặc trường phù hợp
+                    direction = Sort.Direction.DESC
+            ) Pageable pageable
+    ) {
+        Page<Order> orders = orderService.getAllOrders(pageable);
         return ResponseEntity.ok(orders);
     }
+
+    @GetMapping("/by-branch")
+    @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
+    public ResponseEntity<Page<Order>> getOrdersByBranch(
+            @RequestParam Long branchId,
+            @ParameterObject
+            @PageableDefault(
+                    page = 0,
+                    size = 10,
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC
+            ) Pageable pageable
+    ) {
+        Page<Order> orders = orderService.getOrdersByBranch(branchId, pageable);
+        return ResponseEntity.ok(orders);
+    }
+
 
     @DeleteMapping
     @PreAuthorize("hasAnyRole('ADMIN')")

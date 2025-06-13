@@ -78,17 +78,17 @@ public class ExcelGenerator {
 
             // Original amount
             Cell origCell = dataRow.createCell(c++);
-            origCell.setCellValue(invoice.getOriginalAmount());
+            origCell.setCellValue(invoice.getOriginalAmount().doubleValue());
             origCell.setCellStyle(currencyStyle);
 
             // Discount amount
             Cell discountCell = dataRow.createCell(c++);
-            discountCell.setCellValue(invoice.getDiscountAmount());
+            discountCell.setCellValue(invoice.getDiscountAmount().doubleValue());
             discountCell.setCellStyle(currencyStyle);
 
             // Total amount
             Cell totalCell = dataRow.createCell(c++);
-            totalCell.setCellValue(invoice.getTotalAmount());
+            totalCell.setCellValue(invoice.getTotalAmount().doubleValue());
             totalCell.setCellStyle(currencyStyle);
 
             // Auto-size columns
@@ -121,13 +121,13 @@ public class ExcelGenerator {
                 row.createCell(1).setCellValue(item.getMenuItem().getCategory().getName());
 
                 Cell priceCell = row.createCell(2);
-                priceCell.setCellValue(item.getMenuItem().getPrice());
+                priceCell.setCellValue(item.getMenuItem().getPrice().doubleValue());
                 priceCell.setCellStyle(currencyStyle);
 
                 row.createCell(3).setCellValue(item.getQuantity());
 
                 Cell lineTotal = row.createCell(4);
-                lineTotal.setCellValue(item.getMenuItem().getPrice() * item.getQuantity());
+                lineTotal.setCellValue(item.getMenuItem().getPrice().doubleValue() * item.getQuantity());
                 lineTotal.setCellStyle(currencyStyle);
 
                 for (int j = 0; j < detailHeaders.length; j++) {

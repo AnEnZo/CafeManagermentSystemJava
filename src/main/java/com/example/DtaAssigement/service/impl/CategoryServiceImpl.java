@@ -1,42 +1,59 @@
 package com.example.DtaAssigement.service.impl;
 
+import com.example.DtaAssigement.dto.CategoryDTO;
+import com.example.DtaAssigement.entity.Branch;
 import com.example.DtaAssigement.entity.Category;
+import com.example.DtaAssigement.entity.RestaurantTable;
+import com.example.DtaAssigement.mapper.TableMapper;
+import com.example.DtaAssigement.repository.BranchRepository;
 import com.example.DtaAssigement.repository.CategoryRepository;
 import com.example.DtaAssigement.service.CategoryService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-
+import com.example.DtaAssigement.mapper.CategoryMapper;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository repository;
-
-    @Autowired
-    public CategoryServiceImpl(CategoryRepository repository) {
-        this.repository = repository;
-    }
+    private final BranchRepository branchRepo;
 
     @Override
     @Cacheable(value = "categories", key = "'all'")
-    public List<Category> getAllCategories() {
-        return repository.findAll();
+    public List<CategoryDTO> getAllCategories() {
+        return repository.findAll()
+                .stream()
+                .map(CategoryMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
     @Cacheable(value = "category", key = "#id")
-    public Optional<Category> getCategoryById(Long id) {
-        return repository.findById(id);
+    public Optional<CategoryDTO> getCategoryById(Long id) {
+        return repository.findById(id)
+                .stream()
+                .map(CategoryMapper::toDTO)
+                .findFirst();
     }
 
     @Override
     @CacheEvict(value = "categories", allEntries = true)  // Evict cache for all categories when a category is created
-    public Category createCategory(Category category) {
-        return repository.save(category);
+    public CategoryDTO createCategory(CategoryDTO categoryDTO) {
+        Branch branch = branchRepo.findByName(categoryDTO.getBranchName())
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy chi nhánh: " + categoryDTO.getBranchName()));
+
+        Category category = CategoryMapper.toEntity(categoryDTO, branch);
+        Category savedCategory = repository.save(category);
+
+        return CategoryMapper.toDTO(savedCategory);
     }
 
     @Override

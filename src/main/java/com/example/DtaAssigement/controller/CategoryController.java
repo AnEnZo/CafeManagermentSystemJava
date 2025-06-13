@@ -1,8 +1,10 @@
 package com.example.DtaAssigement.controller;
 
+import com.example.DtaAssigement.dto.CategoryDTO;
 import com.example.DtaAssigement.entity.Category;
 import com.example.DtaAssigement.service.CategoryService;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,24 +15,21 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/categories")
+@AllArgsConstructor
 public class CategoryController {
 
     private final CategoryService service;
 
-    @Autowired
-    public CategoryController(CategoryService service) {
-        this.service = service;
-    }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('STAFF','ADMIN','USER')")
-    public List<Category> getAll() {
+    public List<CategoryDTO> getAll() {
         return service.getAllCategories();
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('STAFF','ADMIN','USER')")
-    public ResponseEntity<Category> getById(@PathVariable Long id) {
+    public ResponseEntity<CategoryDTO> getById(@PathVariable Long id) {
         return service.getCategoryById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -38,8 +37,8 @@ public class CategoryController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<Category> create( @Valid @RequestBody Category category) {
-        Category created = service.createCategory(category);
+    public ResponseEntity<CategoryDTO> create( @Valid @RequestBody CategoryDTO categoryDTO) {
+        CategoryDTO created = service.createCategory(categoryDTO);
         return ResponseEntity.created(URI.create("/api/categories/" + created.getId()))
                 .body(created);
     }

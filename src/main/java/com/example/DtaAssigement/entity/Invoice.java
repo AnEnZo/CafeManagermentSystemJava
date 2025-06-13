@@ -3,8 +3,10 @@ package com.example.DtaAssigement.entity;
 import com.example.DtaAssigement.ennum.PaymentMethod;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -24,9 +26,15 @@ public class Invoice {
     @JoinColumn(name = "voucher_id")
     private Voucher voucher;
 
-    private double originalAmount;
-    private double discountAmount;
-    private double totalAmount;
+    @Column(precision = 12, scale = 2)
+    private BigDecimal originalAmount;
+
+    @Column(precision = 12, scale = 2)
+    private BigDecimal discountAmount;
+
+    @Column(precision = 12, scale = 2)
+    private BigDecimal totalAmount;
+
 
     @OneToOne
     @JoinColumn(name = "order_id")
@@ -38,6 +46,5 @@ public class Invoice {
 
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
-
 
 }

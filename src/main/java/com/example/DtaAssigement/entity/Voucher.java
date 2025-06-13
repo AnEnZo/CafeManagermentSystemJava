@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,10 +32,12 @@ public class Voucher {
     private VoucherType type;
 
     @Schema(description = "Giá trị giảm giá")
-    private Double discountValue;
+    @Column(precision = 15, scale = 2)
+    private BigDecimal discountValue;
 
     @Schema(description = "Số tiền tối thiểu để áp dụng voucher")
-    private Double minOrderAmount;
+    @Column(precision = 15, scale = 2)
+    private BigDecimal minOrderAmount;
 
     @Schema(description = "Trạng thái voucher")
     private boolean active;

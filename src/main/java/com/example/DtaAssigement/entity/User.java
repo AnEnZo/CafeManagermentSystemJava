@@ -1,11 +1,13 @@
 package com.example.DtaAssigement.entity;
 
 
+import com.example.DtaAssigement.ennum.AuthProvider;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -19,6 +21,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String displayName;
     private String username;
     private String password;
     private String email;
@@ -40,5 +43,17 @@ public class User {
     @JsonManagedReference
     @Builder.Default
     private Set<UserVoucher> userVouchers = new HashSet<>();
+
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.REMOVE,orphanRemoval = true)
+    private List<Message> messages;
+
+    @ManyToOne
+    @JoinColumn(name = "branch_id",nullable = true)
+    private Branch branch;
+
+    @Enumerated(EnumType.STRING)
+    private AuthProvider provider;   // LOCAL, GOOGLE, FACEBOOK…
+
+    private String providerId;       // sẽ lưu “sub” hoặc “id” của user bên provider
 
 }

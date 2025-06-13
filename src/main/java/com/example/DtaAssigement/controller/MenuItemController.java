@@ -1,9 +1,13 @@
 package com.example.DtaAssigement.controller;
 
+import com.example.DtaAssigement.dto.MenuItemDTO;
 import com.example.DtaAssigement.entity.MenuItem;
+import com.example.DtaAssigement.entity.MenuItemIngredient;
 import com.example.DtaAssigement.service.MenuItemService;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -13,14 +17,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/menu-items")
+@AllArgsConstructor
 public class MenuItemController {
 
     private final MenuItemService service;
+    private final MenuItemService menuItemService;
 
-    @Autowired
-    public MenuItemController(MenuItemService service) {
-        this.service = service;
-    }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('STAFF','ADMIN','USER')")
@@ -38,18 +40,18 @@ public class MenuItemController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<MenuItem> create( @Valid @RequestBody MenuItem menuItem) {
-        MenuItem created = service.createMenuItem(menuItem);
+    public ResponseEntity<MenuItemDTO> create(@Valid @RequestBody MenuItemDTO menuItemDTO) {
+        MenuItemDTO created = service.createMenuItem(menuItemDTO);
         return ResponseEntity.created(URI.create("/api/menu-items/" + created.getId()))
                 .body(created);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<MenuItem> update(
+    public ResponseEntity<MenuItemDTO> update(
             @PathVariable Long id,
-            @Valid @RequestBody MenuItem menuItem) {
-        MenuItem updated = service.updateMenuItem(id, menuItem);
+            @Valid @RequestBody MenuItemDTO menuItemDTO) {
+        MenuItemDTO updated = service.updateMenuItem(id, menuItemDTO);
         return ResponseEntity.ok(updated);
     }
 
@@ -59,5 +61,27 @@ public class MenuItemController {
         service.deleteMenuItem(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{menuItemId}/ingredients")
+    public ResponseEntity<MenuItemIngredient> addIngredientToMenuItem(
+            @PathVariable Long menuItemId,
+            @RequestParam("ingredientId") Long ingredientId,
+            @RequestParam("quantityUsed") double quantityUsed) {
+
+        MenuItemIngredient added = menuItemService.addIngredient(menuItemId, ingredientId, quantityUsed);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(added);
+    }
+
+    @DeleteMapping("/{menuItemId}/ingredients/{menuItemIngredientId}")
+    public ResponseEntity<Void> removeIngredientFromMenuItem(
+            @PathVariable Long menuItemId,
+            @PathVariable Long menuItemIngredientId) {
+
+        menuItemService.removeIngredient(menuItemId, menuItemIngredientId);
+        return ResponseEntity.noContent().build();
+    }
+
 }
 
