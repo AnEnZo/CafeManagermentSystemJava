@@ -21,8 +21,10 @@ public class MailPasswordServiceImpl implements MailPasswordService {
 
     @Autowired
     private TokenResetPasswordRepository tokenRepo;
-    @Autowired private UserService userService;
-    @Autowired private JavaMailSender mailSender;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private JavaMailSender mailSender;
 
     @Override
     public void createPasswordResetToken(String email, String appUrl) {

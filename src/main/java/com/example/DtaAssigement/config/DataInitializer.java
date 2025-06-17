@@ -24,6 +24,7 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        System.out.println("🔧 DataInitializer is running...");
         // 1. Tạo 3 role nếu chưa có
         String[] roles = { "ROLE_ADMIN", "ROLE_STAFF", "ROLE_USER" };
         for (String roleName : roles) {
