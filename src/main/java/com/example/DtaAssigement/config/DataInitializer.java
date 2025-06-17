@@ -28,7 +28,7 @@ public class DataInitializer implements CommandLineRunner {
         // 1. Tạo 3 role nếu chưa có
         String[] roles = { "ROLE_ADMIN", "ROLE_STAFF", "ROLE_USER" };
         for (String roleName : roles) {
-            if (roleRepo.findByName(roleName) == null) {
+            if (roleRepo.findByName(roleName).isEmpty()) {
                 roleRepo.save(Roles.builder()
                         .name(roleName)
                         .build());
@@ -36,7 +36,7 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         // 2. Tạo user admin nếu chưa có
-        if (userRepo.findByUsername("admin") == null) {
+        if (userRepo.findByUsername("admin").isEmpty()) {
             User admin = User.builder()
                     .username("admin")
                     .displayName("AnEnZo")
