@@ -6,12 +6,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
+import java.util.Set;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class UserDTO {
-    @Schema(hidden = true)
+    @Schema(description = "Category ID", accessMode = Schema.AccessMode.READ_ONLY)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
 
     @NotBlank(message = "Username is mandatory")
@@ -37,4 +40,20 @@ public class UserDTO {
     @NotBlank(message = "SĐT không được để trống")
     @Pattern(regexp = "^[0-9]{11}$", message = "SĐT không hợp lệ, vui lòng nhập lại")
     private String phoneNumber;
+
+    @Schema(description = "Reward points accumulated by the user", accessMode = Schema.AccessMode.READ_ONLY)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Integer rewardPoints;
+
+    @Schema(description = "Roles granted to the user", accessMode = Schema.AccessMode.READ_ONLY)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Set<String> roles;
+
+    @Schema(description = "Authentication provider", accessMode = Schema.AccessMode.READ_ONLY)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String provider;
+
+    @Schema(description = "ID from OAuth provider", accessMode = Schema.AccessMode.READ_ONLY)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String providerId;
 }

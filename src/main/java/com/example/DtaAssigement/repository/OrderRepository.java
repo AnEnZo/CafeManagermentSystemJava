@@ -18,6 +18,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<Order> findById(@Param("id") Long id);
 
-    Page<Order> findByTable_Branch_Id(Long branchId, Pageable pageable);
+    Optional<Order> findTopByTableIdOrderByOrderTimeDesc(Long tableId);
 
 }

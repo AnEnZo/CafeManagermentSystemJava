@@ -36,27 +36,24 @@ public class RevenueController {
     public void record(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam PaymentMethod method,
-            @RequestParam BigDecimal amount,
-            @RequestParam Long branchId
+            @RequestParam BigDecimal amount
     ) {
-        revenueService.recordRevenue(date, method, amount,branchId);
+        revenueService.recordRevenue(date, method, amount);
     }
 
     @GetMapping("/date/{date}")
     @PreAuthorize("hasAnyRole('ADMIN','STAFF','USER')")
     public double getByDate(
-            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @RequestParam Long branchId) {
-        return revenueService.getRevenueByDate(date,branchId);
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return revenueService.getRevenueByDate(date);
     }
 
     @GetMapping("/month")
     @PreAuthorize("hasAnyRole('ADMIN','STAFF','USER')")
     public double getByMonth(
             @RequestParam int month,
-            @RequestParam int year,
-            @RequestParam Long branchId) {
-        return revenueService.getRevenueByMonth(month, year,branchId);
+            @RequestParam int year) {
+        return revenueService.getRevenueByMonth(month, year);
     }
 
     @GetMapping("/payment-method")
@@ -64,23 +61,31 @@ public class RevenueController {
     public double getByPaymentMethod(
             @RequestParam PaymentMethod method,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
-            @RequestParam Long branchId) {
-        return revenueService.getRevenueByPaymentMethod(method, start, end,branchId);
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+        return revenueService.getRevenueByPaymentMethod(method, start, end);
     }
 
     @GetMapping("/grouped")
     @PreAuthorize("hasAnyRole('ADMIN','STAFF','USER')")
     public List<RevenueSummary> getGrouped(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
-            @RequestParam Long branchId) {
-        return revenueService.getRevenueGroupedByMethod(start, end,branchId);
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+        return revenueService.getRevenueGroupedByMethod(start, end);
     }
 
     @GetMapping("/invoicesByDate")
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF','USER')")
     public List<Invoice> getInvoicesByDate(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return revenueService.getInvoicesByDate(date);
     }
+
+    @GetMapping("/daily")
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+    public List<DailyRevenueDTO> getDailyRevenueInMonth(
+            @RequestParam int month,
+            @RequestParam int year) {
+        return revenueService.getDailyRevenueInMonth(month, year);
+    }
+
 
 }

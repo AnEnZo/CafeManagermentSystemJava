@@ -1,0 +1,28 @@
+/* OrdersPage.css */
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.orders-page {
+  width: 100vw; /* viewport width */
+  max-width: 100%; /* không giới hạn */
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+
+.order-actions input {
+  width: 100px;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+table {
+  width: 100%;
+}

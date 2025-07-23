@@ -1,5 +1,6 @@
 package com.example.DtaAssigement.controller;
 
+import com.example.DtaAssigement.dto.InvoiceCalculationDTO;
 import com.example.DtaAssigement.ennum.OrderStatus;
 import com.example.DtaAssigement.ennum.PaymentMethod;
 import com.example.DtaAssigement.entity.Invoice;
@@ -43,38 +44,27 @@ public class InvoiceController {
     @GetMapping
     @PreAuthorize("hasAnyRole('STAFF','ADMIN','USER')")
     public Page<Invoice> getAllInvoice(
-            @ParameterObject
-            @PageableDefault(
-                    page = 0,
-                    size = 10,
-                    sort = "paymentTime",
-                    direction = Sort.Direction.DESC
-            ) Pageable pageable
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "paymentTime") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir
     ) {
-        return invoiceService.getAllInvoice(pageable);
+        Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        System.out.println("Request pageable: " + pageable);
+        Page<Invoice> pageResult = invoiceService.getAllInvoice(pageable);
+        System.out.println("Respond pagination: totalElements=" + pageResult.getTotalElements() +
+                ", contentSize=" + pageResult.getContent().size());
+        return pageResult;
     }
 
-    @GetMapping("/by-branch")
-    @PreAuthorize("hasAnyRole('STAFF','ADMIN','USER')")
-    public Page<Invoice> getAllInvoiceByBranch(
-            @RequestParam Long branchId,
-            @ParameterObject
-            @PageableDefault(
-                    page = 0,
-                    size = 10,
-                    sort = "paymentTime",
-                    direction = Sort.Direction.DESC
-            ) Pageable pageable
-    ) {
-        return invoiceService.getAllInvoiceByBranch(branchId, pageable);
-    }
 
     @GetMapping("/{invoiceId}")
     @PreAuthorize("hasAnyRole('STAFF','ADMIN','USER')")
     public ResponseEntity<Invoice> getInvoiceById(@PathVariable Long invoiceId){
-           return invoiceService.getInvoiceById(invoiceId)
-                                .map(ResponseEntity::ok)
-                                .orElse(ResponseEntity.notFound().build());
+        return invoiceService.getInvoiceById(invoiceId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     // Tạo hóa đơn cho đơn hàng đã phục vụ
@@ -91,10 +81,18 @@ public class InvoiceController {
     @DeleteMapping
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<?> deleteInvoice(@RequestParam Long invoiceId){
-        boolean deleted = invoiceService.deleteInvoice(invoiceId);
-        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+        try {
+            boolean deleted = invoiceService.deleteInvoice(invoiceId);
+            if (deleted) {
+                return ResponseEntity.noContent().build();
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy hóa đơn để xóa.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace(); // In lỗi cụ thể ra console/log
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi khi xóa hóa đơn: " + e.getMessage());
+        }
     }
-
 
     @GetMapping(value = "/{orderId}/qrcode", produces = MediaType.IMAGE_PNG_VALUE)
     @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
@@ -168,6 +166,14 @@ public class InvoiceController {
         }
     }
 
-
+    @GetMapping("/calculate")
+    @PreAuthorize("hasAnyRole('STAFF','ADMIN','USER')")
+    public ResponseEntity<InvoiceCalculationDTO> calculateInvoice(
+            @RequestParam Long orderId,
+            @RequestParam(required = false) String voucherCode
+    ) {
+        InvoiceCalculationDTO dto = invoiceService.calculateInvoiceAmount(orderId, voucherCode);
+        return ResponseEntity.ok(dto);
+    }
 
 }

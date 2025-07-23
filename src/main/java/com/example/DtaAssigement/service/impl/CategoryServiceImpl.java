@@ -1,17 +1,13 @@
 package com.example.DtaAssigement.service.impl;
 
 import com.example.DtaAssigement.dto.CategoryDTO;
-import com.example.DtaAssigement.entity.Branch;
 import com.example.DtaAssigement.entity.Category;
-import com.example.DtaAssigement.entity.RestaurantTable;
-import com.example.DtaAssigement.mapper.TableMapper;
-import com.example.DtaAssigement.repository.BranchRepository;
 import com.example.DtaAssigement.repository.CategoryRepository;
 import com.example.DtaAssigement.service.CategoryService;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import com.example.DtaAssigement.mapper.CategoryMapper;
 import java.util.List;
@@ -24,7 +20,6 @@ import java.util.stream.Collectors;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository repository;
-    private final BranchRepository branchRepo;
 
     @Override
     @Cacheable(value = "categories", key = "'all'")
@@ -47,17 +42,18 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @CacheEvict(value = "categories", allEntries = true)  // Evict cache for all categories when a category is created
     public CategoryDTO createCategory(CategoryDTO categoryDTO) {
-        Branch branch = branchRepo.findByName(categoryDTO.getBranchName())
-                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy chi nhánh: " + categoryDTO.getBranchName()));
 
-        Category category = CategoryMapper.toEntity(categoryDTO, branch);
+        Category category = CategoryMapper.toEntity(categoryDTO);
         Category savedCategory = repository.save(category);
 
         return CategoryMapper.toDTO(savedCategory);
     }
 
     @Override
-    @CacheEvict(value = "category", key = "#id")  // Evict the cache for the updated category by its id
+    @Caching(evict = {
+            @CacheEvict(value = "categories", allEntries = true),
+            @CacheEvict(value = "category", key = "#id")
+    })
     public Category updateCategory(Long id, Category category) {
         return repository.findById(id)
                 .map(existing -> {
@@ -68,7 +64,10 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    @CacheEvict(value = "category", key = "#id")  // Evict the cache for the deleted category by its id
+    @Caching(evict = {
+            @CacheEvict(value = "categories", allEntries = true),
+            @CacheEvict(value = "category", key = "#id")
+    })
     public void deleteCategory(Long id) {
         repository.deleteById(id);
     }

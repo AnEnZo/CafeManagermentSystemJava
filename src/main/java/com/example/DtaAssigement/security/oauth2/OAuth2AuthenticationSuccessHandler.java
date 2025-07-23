@@ -40,7 +40,7 @@ public class OAuth2AuthenticationSuccessHandler
 
         // Nếu không có cookie, bạn có thể đặt luôn URL mặc định của SPA
         if (redirectUri == null || redirectUri.isBlank()) {
-            redirectUri = "http://localhost:8080/oauth2-redirect.html";
+            redirectUri = "http://localhost:5173/oauth2-redirect";
         }
 
         // Xây dựng URL cuối cùng
@@ -62,7 +62,7 @@ public class OAuth2AuthenticationSuccessHandler
                 .filter(c -> "redirect_uri".equals(c.getName()))
                 .map(Cookie::getValue)
                 .findFirst()
-                .orElse("http://localhost:3000");  // URL mặc định của SPA
+                .orElse("http://localhost:5173/oauth2-redirect");  // URL mặc định của SPA
     }
 
 

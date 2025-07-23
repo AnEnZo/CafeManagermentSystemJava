@@ -28,7 +28,13 @@ public class OrderServiceImpl implements OrderService {
     private final OrderItemRepository orderItemRepo;
     private final UserRepository userRepo;
     private final JwtTokenUtil jwtTokenUtil;
-    private final IngredientRepository ingredientRepo;
+
+
+    @Override
+    public Order getOrderById(Long id) {
+        return orderRepo.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Order not found: " + id));
+    }
 
     @Override
     public Order createOrder(Long tableId) {
@@ -80,21 +86,12 @@ public class OrderServiceImpl implements OrderService {
         MenuItem item = menuItemRepo.findById(menuItemId)
                 .orElseThrow(() -> new NoSuchElementException("MenuItem not found: " + menuItemId));
 
-        if (order.getStaff() == null || order.getStaff().getBranch() == null
-                || item.getCategory() == null || item.getCategory().getBranch() == null) {
+        if (item.getCategory() == null ) {
             throw new IllegalStateException("Thiếu thông tin chi nhánh hoặc danh mục món ăn.");
         }
-        if(order.getStaff().getBranch().getId()!=item.getCategory().getBranch().getId()){
-          throw new IllegalStateException("Món k có trong danh sách món của chi nhánh: " + item.getName());
-      }
-
-        // Kiểm tra nguyên liệu đủ không
-        if (!canPrepareMenuItem(item, quantity)) {
-            throw new IllegalStateException("Không đủ nguyên liệu để chế biến món: " + item.getName());
+        if(order.getStatus().toString()!=OrderStatus.PAID.toString()){
+            throw new IllegalStateException("Đơn hàng đã thanh toán không thể sửa món");
         }
-
-        // Trừ nguyên liệu
-        deductIngredients(item, quantity);
 
         // Tìm xem đã có OrderItem cho menuItem này chưa
         OrderItem existing = order.getOrderItems().stream()
@@ -130,16 +127,19 @@ public class OrderServiceImpl implements OrderService {
         return orderRepo.findAll(pageable);
     }
 
-    @Override
-    public Page<Order> getOrdersByBranch(Long branchId, Pageable pageable) {
-        return orderRepo.findByTable_Branch_Id(branchId, pageable);
-    }
+
 
     public boolean deleteOrder(Long id){
         if(!orderRepo.existsById(id)){return false;}
         Order order = orderRepo.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Order not found: " + id));
-        order.getTable().setAvailable(true);
+
+        // Chỉ cập nhật bàn nếu đây là DINE_IN
+        if (order.getTable() != null) {
+            RestaurantTable table = order.getTable();
+            table.setAvailable(true);
+            tableRepo.save(table);
+        }
         orderRepo.deleteById(id);
         return true;
     }
@@ -169,17 +169,18 @@ public class OrderServiceImpl implements OrderService {
 //                .findFirst()
 //                .orElseThrow(() -> new NoSuchElementException("Item not found in order"));
 
+        if(order.getStatus().toString()!=OrderStatus.PAID.toString()){
+            throw new IllegalStateException("Đơn hàng đã thanh toán không thể sửa món");
+        }
+
         OrderItem orderItem = orderItemRepo.findByOrderIdAndMenuItemId(orderId, menuItemId)
                 .orElseThrow(() -> new NoSuchElementException("Item not found in order"));
-
 
         int currentQuantity = orderItem.getQuantity();
         if (quantityToRemove > currentQuantity) {
             throw new IllegalArgumentException("Số lượng cần xóa vượt quá số lượng hiện tại trong đơn hàng");
         }
 
-        // Cộng lại nguyên liệu bị xóa
-        restoreIngredients(orderItem.getMenuItem(), quantityToRemove);
 
         if (quantityToRemove == currentQuantity) {
             orderItemRepo.delete(orderItem);
@@ -190,33 +191,13 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-    public boolean canPrepareMenuItem(MenuItem menuItem, int quantity) {
-        for (MenuItemIngredient mi : menuItem.getMenuingredients()) {
-            double totalRequired = mi.getQuantityUsed() * quantity;
-            if (mi.getIngredient().getQuantityInStock() < totalRequired) {
-                return false;
-            }
-        }
-        return true;
+
+    @Override
+    public Order getLatestOrderByTableId(Long tableId) {
+        return orderRepo.findTopByTableIdOrderByOrderTimeDesc(tableId)
+                .orElseThrow(() -> new NoSuchElementException("No order found for table " + tableId));
     }
 
-    public void deductIngredients(MenuItem menuItem, int quantity) {
-        for (MenuItemIngredient mi : menuItem.getMenuingredients()) {
-            double used = mi.getQuantityUsed() * quantity;
-            Ingredient ingredient = mi.getIngredient();
-            ingredient.setQuantityInStock(ingredient.getQuantityInStock() - used);
-            ingredientRepo.save(ingredient);
-        }
-    }
-
-    public void restoreIngredients(MenuItem menuItem, int quantity) {
-        for (MenuItemIngredient mi : menuItem.getMenuingredients()) {
-            double amount = mi.getQuantityUsed() * quantity;
-            Ingredient ingredient = mi.getIngredient();
-            ingredient.setQuantityInStock(ingredient.getQuantityInStock() + amount);
-            ingredientRepo.save(ingredient);
-        }
-    }
 
 
 }

@@ -1,35 +1,49 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-
-function App() {
-  const [count, setCount] = useState(0)
-
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Login from './components/Login';
+import OAuth2RedirectHandler from './components/OAuth2RedirectHandler';
+import Home from './components/Home';
+import TablesPage from './pages/TablesPage';
+import Register from './components/Register';
+import OrdersPage from './pages/OrdersPage';
+import OrderDetailPage from './pages/OrderDetailPage';
+import ForgotPasswordEmail from './components/ForgotPasswordEmail';
+import ResetPasswordEmail from './components/ResetPasswordEmail';
+import Category from './pages/Category';
+import InvoicePage from './pages/Invoice';
+import Dishes from './pages/Dishes';
+import Revenue from './pages/Revenue';
+import UserPage from './pages/UserPage';
+import UserVoucherManager from './pages/UserVoucherManager';
+import VoucherManager from './pages/VoucherManager';
+import ProfilePage from './pages/ProfilePage';
+import MenuPage from './pages/MenuPage';
+const App: React.FC = () => {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <Router>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/oauth2-redirect" element={<OAuth2RedirectHandler />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/tables" element={<TablesPage />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/orders" element={<OrdersPage />} />
+        <Route path="/orders/:id" element={<OrderDetailPage />} />
+        <Route path="/forgot-password-email" element={<ForgotPasswordEmail />} />
+        <Route path="/reset-password-email" element={<ResetPasswordEmail />} />
+        <Route path="/categories" element={<Category />} />
+        <Route path="/invoices" element={<InvoicePage />} />
+        <Route path="/dishes" element={<Dishes />} />
+        <Route path="/revenue" element={<Revenue />} />
+        <Route path="/userpage" element={<UserPage />} />
+        <Route path="/profilepage" element={<ProfilePage />} />
+        <Route path="/uservouchermanager" element={<UserVoucherManager />} />
+        <Route path="/vouchermanager" element={<VoucherManager />} />
+        <Route path="/menu" element={<MenuPage />} />
 
-export default App
+      </Routes>
+    </Router>
+  );
+};
+
+export default App;

@@ -1,0 +1,219 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+.user-page {
+  padding: 2rem;
+  font-family: 'Inter', sans-serif;
+  background-color: #fdfaf6;
+}
+
+/* Tiêu đề */
+.user-page-title {
+  color: #6b4423;
+  font-weight: 700;
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  position: relative;
+  padding-bottom: 1rem;
+}
+
+.user-page-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 3px;
+  background: linear-gradient(90deg, #d4a574, #8b4513);
+  border-radius: 2px;
+}
+
+/* Nút thêm */
+.btn-add-user {
+  background: linear-gradient(135deg, #8b5e3c, #d4a574);
+  color: white;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(139, 69, 19, 0.2);
+  transition: all 0.3s ease;
+}
+
+.btn-add-user:hover {
+  background: linear-gradient(135deg, #a9744f, #e0b88c);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(139, 69, 19, 0.3);
+}
+
+/* Form người dùng */
+.add-user-form {
+  background: #fffaf4;
+  padding: 1.5rem;
+  border-radius: 20px;
+  box-shadow: 0 5px 15px rgba(139, 69, 19, 0.1);
+  margin-bottom: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.add-user-form input,
+.add-user-form select {
+  flex: 1 1 200px;
+  padding: 0.6rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  font-family: 'Inter', sans-serif;
+  color: #000 !important;
+  background-color: #fff;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: border-color 0.2s;
+}
+
+.add-user-form input:focus,
+.add-user-form select:focus {
+  border-color: #d4a574;
+  outline: none;
+}
+
+/* Bảng */
+.user-table {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.user-table thead {
+  background: linear-gradient(135deg, #6b4423, #8b4513);
+  color: white;
+}
+
+.user-table thead th {
+  padding: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}
+
+.user-table tbody tr {
+  transition: background 0.2s;
+  border-bottom: 1px solid rgba(212, 165, 116, 0.15);
+}
+
+.user-table tbody tr:hover {
+  background: rgba(212, 165, 116, 0.05);
+}
+
+.user-table tbody td {
+  padding: 1rem;
+  vertical-align: middle;
+  font-weight: 500;
+  color: #3e2723;
+}
+
+/* Badge */
+.provider-badge {
+  display: inline-block;
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+}
+
+.provider-local {
+  background: #6b4423;
+}
+
+.provider-google {
+  background: #DB4437;
+}
+
+.provider-facebook {
+  background: #3B5998;
+}
+
+/* Nút hành động */
+.btn-user-action {
+  background: linear-gradient(135deg, #d4a574, #b8956a);
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0.2rem;
+  transition: all 0.3s ease;
+}
+
+.btn-user-action:hover {
+  background: linear-gradient(135deg, #b8956a, #a08660);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(212, 165, 116, 0.3);
+}
+
+/* Điểm thưởng */
+.reward-points {
+  font-weight: 600;
+  color: #8b4513;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .user-page-title {
+    font-size: 2rem;
+  }
+
+  .user-table thead {
+    display: none;
+  }
+
+  .user-table,
+  .user-table tbody,
+  .user-table tr,
+  .user-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .user-table tr {
+    margin-bottom: 1rem;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  .user-table td {
+    text-align: right;
+    padding-left: 50%;
+    position: relative;
+  }
+
+  .user-table td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #6b4423;
+    font-size: 0.85rem;
+  }
+
+  .add-user-form {
+    flex-direction: column;
+  }
+
+  .add-user-form input,
+  .add-user-form select {
+    width: 100%;
+  }
+}

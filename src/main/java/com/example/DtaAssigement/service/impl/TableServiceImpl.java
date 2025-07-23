@@ -1,10 +1,8 @@
 package com.example.DtaAssigement.service.impl;
 
 import com.example.DtaAssigement.dto.RestaurantTableDTO;
-import com.example.DtaAssigement.entity.Branch;
 import com.example.DtaAssigement.entity.RestaurantTable;
 import com.example.DtaAssigement.mapper.TableMapper;
-import com.example.DtaAssigement.repository.BranchRepository;
 import com.example.DtaAssigement.repository.TableRepository;
 import com.example.DtaAssigement.service.TableService;
 import jakarta.transaction.Transactional;
@@ -24,8 +22,6 @@ public class TableServiceImpl implements TableService {
 
 
     private final TableRepository tableRepo;
-    private final BranchRepository branchRepo;
-
 
     @Override
     @Cacheable(value = "tables", key = "'all'")
@@ -46,10 +42,9 @@ public class TableServiceImpl implements TableService {
                 throw new IllegalStateException("Bàn đã tồn tại với ID: " + tableDTO.getName());
             }
         }
-        Branch branch = branchRepo.findByName(tableDTO.getBranchName())
-                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy chi nhánh: " + tableDTO.getBranchName()));
 
-        RestaurantTable table = TableMapper.toEntity(tableDTO, branch);
+
+        RestaurantTable table = TableMapper.toEntity(tableDTO);
 
         table.setAvailable(true); // mặc định là true khi tạo mới
 
@@ -75,25 +70,12 @@ public class TableServiceImpl implements TableService {
         return true;
     }
 
-    @Override
-    public long getTotalTables(String branchName) {
-        Branch branch=branchRepo.findByName(branchName).orElseThrow(
-                () -> new NoSuchElementException("Không tìm thấy chi nhánh: " + branchName));
-        return tableRepo.countByBranch(branch);
-    }
+
+
 
     @Override
-    public long getAvailableTables(String branchName) {
-        Branch branch=branchRepo.findByName(branchName).orElseThrow(
-                () -> new NoSuchElementException("Không tìm thấy chi nhánh: " + branchName));
-        return tableRepo.countByAvailableTrueAndBranch(branch);
-    }
-
-    @Override
-    public List<RestaurantTableDTO> getListAvailableTables(String branchName) {
-        Branch branch=branchRepo.findByName(branchName).orElseThrow(
-                () -> new NoSuchElementException("Không tìm thấy chi nhánh: " + branchName));
-        return tableRepo.findByAvailableTrueAndBranch(branch)
+    public List<RestaurantTableDTO> getListAvailableTables() {
+        return tableRepo.findByAvailableTrue()
                 .stream()
                 .map(TableMapper::toDTO)
                 .collect(Collectors.toList());

@@ -1,5 +1,6 @@
 package com.example.DtaAssigement.service;
 
+import com.example.DtaAssigement.dto.InvoiceCalculationDTO;
 import com.example.DtaAssigement.ennum.PaymentMethod;
 import com.example.DtaAssigement.entity.Invoice;
 import org.springframework.data.domain.Page;
@@ -14,6 +15,5 @@ public interface InvoiceService {
     Optional<Invoice> getInvoiceById(Long id);
     Invoice findById(Long id);
     Page<Invoice> getAllInvoice(Pageable pageable);
-    Page<Invoice> getAllInvoiceByBranch(Long branchId, Pageable pageable);
-
+    InvoiceCalculationDTO calculateInvoiceAmount(Long orderId, String voucherCode);
 }

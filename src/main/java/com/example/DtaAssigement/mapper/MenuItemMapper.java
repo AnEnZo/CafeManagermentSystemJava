@@ -4,14 +4,9 @@ package com.example.DtaAssigement.mapper;
 import com.example.DtaAssigement.dto.MenuItemDTO;
 
 import com.example.DtaAssigement.entity.Category;
-import com.example.DtaAssigement.entity.Ingredient;
 import com.example.DtaAssigement.entity.MenuItem;
-import com.example.DtaAssigement.entity.MenuItemIngredient;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @AllArgsConstructor
@@ -26,6 +21,7 @@ public class MenuItemMapper {
                 .id(entity.getId())
                 .name(entity.getName())
                 .price(entity.getPrice())
+                .imageUrl(entity.getImageUrl())
                 .category(CategoryMapper.toDTO(entity.getCategory()))
                 .build();
     }
@@ -39,6 +35,7 @@ public class MenuItemMapper {
         entity.setId(dto.getId());
         entity.setName(dto.getName());
         entity.setPrice(dto.getPrice());
+        entity.setImageUrl(dto.getImageUrl());
         entity.setCategory(category);
 
         return entity;

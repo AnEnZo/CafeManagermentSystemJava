@@ -8,14 +8,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface UserService {
     Page<UserDTO> getAllUsers(Pageable pageable);
     UserDTO getUserById(Long id);
     UserDTO createUser(UserDTO userDTO);
-    UserDTO createStaff(UserDTO userDTO, Long branchID);
-    UserDTO updateUser(Long id, UserDTO userDTO, Long branchID);
+    UserDTO createStaff(UserDTO userDTO);
+    UserDTO updateUser(Long id, UserDTO userDTO);
     boolean deleteUser(Long id);
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
@@ -25,4 +26,6 @@ public interface UserService {
     void updatePassword(User user, String rawPassword);
     Optional<User> findByUsername(String username);
     User processOAuthUser(String provider, String providerId, String email, String username, String displayname);
+    UserDTO getUserByUsername(String username);
+    UserDTO updateCurrentUser(String username, Map<String,Object> updates);
 }

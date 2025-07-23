@@ -1,0 +1,159 @@
+/* src/css/Login.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+:root {
+  --bg-light: #f8f9fa;
+  --card-bg: #ffffff;
+  --border: #e2e8f0;
+  --text-dark: #343a40;
+  --text-muted: #6c757d;
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --google-red: #db4437;
+  --shadow-light: rgba(0, 0, 0, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+}
+
+.login-page {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background-color: var(--bg-light);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+.login-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 24px var(--shadow-light);
+  width: 100%;
+  max-width: 380px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.login-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px var(--shadow-light);
+}
+
+.login-card .card-body {
+  padding: 2.5rem;
+}
+
+.login-title {
+  margin-bottom: 1.5rem;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  text-align: center;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+}
+
+.d-grid {
+  display: grid;
+}
+
+.login-btn {
+  background-color: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 0.65rem;
+  font-size: 1rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+.login-btn:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
+}
+.login-btn:active {
+  transform: translateY(0);
+}
+
+/* separator */
+.or-separator {
+  position: relative;
+  text-align: center;
+  margin: 1.75rem 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.or-separator::before,
+.or-separator::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background: var(--border);
+}
+.or-separator::before { left: 0; }
+.or-separator::after  { right: 0; }
+
+/* Google button */
+.btn-google {
+  background-color: #fff;
+  color: var(--text-dark);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.55rem;
+  font-size: 0.95rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.btn-google svg {
+  color: var(--google-red);
+  font-size: 1.2rem;
+}
+.btn-google:hover {
+  border-color: var(--text-muted);
+  box-shadow: 0 4px 12px var(--shadow-light);
+}
+
+/* Responsive nhỏ */
+@media (max-width: 400px) {
+  .login-card {
+    max-width: 100%;
+  }
+  .login-title {
+    font-size: 1.5rem;
+  }
+}

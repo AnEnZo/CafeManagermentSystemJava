@@ -17,6 +17,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -80,6 +81,13 @@ public class UserVoucherServiceImpl implements UserVoucherService {
     public UserVoucher getById(Long id) {
         return userVoucherRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("UserVoucher not found: " + id));
+    }
+
+    @Override
+    public List<UserVoucher> getVouchersForUser(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return userVoucherRepository.findByUser(user);
     }
 
 }

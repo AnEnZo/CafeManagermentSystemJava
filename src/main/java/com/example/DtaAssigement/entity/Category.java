@@ -29,7 +29,5 @@ public class Category {
     @Schema(hidden = true)
     private List<MenuItem> items;
 
-    @ManyToOne
-    @JoinColumn(name = "branch_id", nullable = false)
-    private Branch branch;
+
 }

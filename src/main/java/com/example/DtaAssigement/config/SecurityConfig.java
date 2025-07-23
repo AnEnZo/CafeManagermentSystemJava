@@ -2,15 +2,12 @@ package com.example.DtaAssigement.config;
 
 import com.example.DtaAssigement.security.CustomUserDetailsService;
 import com.example.DtaAssigement.security.JwtAuthenticationFilter;
-import com.example.DtaAssigement.security.JwtChannelInterceptor;
 import com.example.DtaAssigement.security.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.example.DtaAssigement.security.oauth2.OAuth2AuthenticationSuccessHandler;
 import com.example.DtaAssigement.service.impl.CustomOAuth2UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.messaging.simp.config.ChannelRegistration;
-import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -19,16 +16,11 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
-import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
 import java.util.List;
 
@@ -78,8 +70,6 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-
-                //.authenticationManager(authenticationManager(authConfig))
 
                 // Cấu hình OAuth2 login
                 .oauth2Login(oauth2 -> oauth2

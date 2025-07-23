@@ -13,6 +13,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.util.Base64;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -58,5 +59,11 @@ public class UserVoucherController {
         return ResponseEntity.ok(userVoucher);
     }
 
+    @GetMapping("/{username}")
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF','USER')")
+    public ResponseEntity<List<UserVoucher>> getVouchersForUser(@PathVariable String username) {
+        List<UserVoucher> vouchers = userVoucherService.getVouchersForUser(username);
+        return ResponseEntity.ok(vouchers);
+    }
 
 }

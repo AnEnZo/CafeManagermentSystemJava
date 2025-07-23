@@ -9,6 +9,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
-    Page<Invoice> findByCashier_Branch_Id(Long branchId, Pageable pageable);
-
 }

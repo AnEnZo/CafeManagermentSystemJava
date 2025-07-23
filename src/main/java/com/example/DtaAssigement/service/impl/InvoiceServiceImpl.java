@@ -1,5 +1,6 @@
 package com.example.DtaAssigement.service.impl;
 
+import com.example.DtaAssigement.dto.InvoiceCalculationDTO;
 import com.example.DtaAssigement.ennum.PaymentMethod;
 import com.example.DtaAssigement.entity.*;
 import com.example.DtaAssigement.ennum.OrderStatus;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @Transactional
@@ -122,7 +124,9 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         // Cập nhật trạng thái đơn hàng và bàn
         order.setStatus(OrderStatus.PAID);
-        order.getTable().setAvailable(true);
+        if(order.getTable()!=null){
+            order.getTable().setAvailable(true);
+        }
         orderRepo.save(order);
 
 
@@ -145,8 +149,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         revenueService.recordRevenue(
                 invoice.getPaymentTime().toLocalDate(),
                 paymentMethod,
-                invoice.getTotalAmount(),
-                invoice.getCashier().getBranch().getId()
+                invoice.getTotalAmount()
         );
 
         return invoiceRepo.save(invoice);
@@ -163,9 +166,7 @@ public class InvoiceServiceImpl implements InvoiceService {
             revenueService.recordRevenue(
                     invoice.getPaymentTime().toLocalDate(),
                     invoice.getPaymentMethod(),
-                    invoice.getTotalAmount().negate(),
-                    invoice.getCashier().getBranch().getId()
-            );
+                    invoice.getTotalAmount().negate());
             return true;
         }
 
@@ -184,9 +185,59 @@ public class InvoiceServiceImpl implements InvoiceService {
         return invoiceRepo.findAll(pageable);
         }
 
+
     @Override
-    public Page<Invoice> getAllInvoiceByBranch(Long branchId, Pageable pageable) {
-        return invoiceRepo.findByCashier_Branch_Id(branchId, pageable);
+    public InvoiceCalculationDTO calculateInvoiceAmount(Long orderId, String voucherCode) {
+
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new NoSuchElementException("Order not found: " + orderId));
+
+        BigDecimal originalAmount = orderItemRepo.calculateOrderTotalAmount(orderId);
+
+        AtomicReference<BigDecimal> discountAmount = new AtomicReference<>(BigDecimal.ZERO);
+
+
+        if (voucherCode != null && !voucherCode.isEmpty()) {
+            UserVoucher userVoucher = userVoucherRepo.findByCode(voucherCode)
+                    .orElseThrow(() -> new NoSuchElementException("Invalid voucher code: " + voucherCode));
+
+            if (!userVoucher.isUsed() && userVoucher.getExpiryAt().isAfter(LocalDateTime.now())) {
+                Voucher voucher = userVoucher.getVoucher();
+                if (voucher.isActive()) {
+                    switch (voucher.getType()) {
+                        case PERCENTAGE_DISCOUNT:
+                            if (originalAmount.compareTo(voucher.getMinOrderAmount()) >= 0) {
+                                BigDecimal percent = voucher.getDiscountValue()
+                                        .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+                                discountAmount.set(originalAmount.multiply(percent).setScale(2, RoundingMode.HALF_UP));
+                            }
+                            break;
+                        case FIXED_DISCOUNT:
+                            if (originalAmount.compareTo(voucher.getMinOrderAmount()) >= 0) {
+                                discountAmount.set(voucher.getDiscountValue());
+                            }
+                            break;
+                        case BUY_ONE_GET_ONE:
+                            order.getOrderItems().stream().findFirst().ifPresent(item -> {
+                                if (item.getQuantity() >= 2) {
+                                    discountAmount.set(item.getMenuItem().getPrice());
+                                }
+                            });
+                            break;
+                    }
+
+                    // Đảm bảo không vượt quá tiền gốc
+                    if (discountAmount.get().compareTo(originalAmount) > 0) {
+                        discountAmount.set(originalAmount);
+                    }
+                }
+            }
+        }
+
+        BigDecimal totalAmount = originalAmount.subtract(discountAmount.get()).setScale(2, RoundingMode.HALF_UP);
+        return new InvoiceCalculationDTO(originalAmount, discountAmount.get(), totalAmount);
     }
+
+
 
 }

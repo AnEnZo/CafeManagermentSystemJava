@@ -17,7 +17,6 @@ import lombok.Setter;
 public class RestaurantTable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Schema(hidden = true)
     private Long id;
 
     @NotBlank(message = "Tên bàn không được để trống")
@@ -28,7 +27,5 @@ public class RestaurantTable {
 
     private int capacity;
 
-    @ManyToOne
-    @JoinColumn(name = "branch_id", nullable = false)
-    private Branch branch;
+
 }

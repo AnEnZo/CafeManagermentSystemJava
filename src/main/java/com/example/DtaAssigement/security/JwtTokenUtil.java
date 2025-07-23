@@ -16,7 +16,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -34,9 +36,15 @@ public class JwtTokenUtil {
     public String generateToken(UserDetails userDetails) {
         CustomUserDetails u = (CustomUserDetails) userDetails;
 
+        // Lấy danh sách role dưới dạng List<String>
+        List<String> roles = u.getAuthorities().stream()
+                .map(granted -> granted.getAuthority())
+                .collect(Collectors.toList());
+
         return Jwts.builder()
                 .setSubject(u.getUsername())
                 .claim("displayName", u.getDisplayName())
+                .claim("roles", roles)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiration * 1000))
                 .signWith(SignatureAlgorithm.HS512, secret)

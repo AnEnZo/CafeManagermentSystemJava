@@ -1,6 +1,7 @@
 package com.example.DtaAssigement.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -31,6 +32,9 @@ public class MenuItem {
     @Column(precision = 12, scale = 2)
     private BigDecimal price;
 
+    @NotBlank(message = "Ảnh món ăn không được để trống")
+    @Column(name = "image_url", columnDefinition = "TEXT")
+    private String imageUrl;
 
     @ManyToOne
     @JsonBackReference
@@ -39,7 +43,7 @@ public class MenuItem {
     private Category category;
 
     @OneToMany(mappedBy = "menuItem", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private List<MenuItemIngredient> menuingredients;
+    @JsonBackReference
+    private List<OrderItem> orderItems;
 
 }

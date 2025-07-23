@@ -1,10 +1,8 @@
 package com.example.DtaAssigement.invoidGenerateWordExcelQrCode;
 
-import com.example.DtaAssigement.entity.Branch;
 import com.example.DtaAssigement.entity.Invoice;
 import com.example.DtaAssigement.entity.OrderItem;
 import com.example.DtaAssigement.ennum.PaymentMethod;
-import com.example.DtaAssigement.entity.SalaryRecord;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.xwpf.usermodel.*;
 import org.apache.poi.util.Units;
@@ -21,26 +19,28 @@ import java.util.Map;
 
 public class WordGenerator {
 
-    public static byte[] generateInvoiceWord(Invoice invoice) throws IOException,InvalidFormatException {
+    // Thông tin công ty (thiết lập tĩnh)
+    private static final String COMPANY_NAME = "The Coffe House";
+    private static final String COMPANY_ADDRESS = "394 Mỹ Đình";
+    private static final String COMPANY_PHONE = "0564870803";
+
+    public static byte[] generateInvoiceWord(Invoice invoice) throws IOException, InvalidFormatException {
         try (XWPFDocument doc = new XWPFDocument();
              ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
             DecimalFormat currencyFormat = new DecimalFormat("###,###");
 
-            Branch branch = invoice.getCashier().getBranch();
-
-            // Company Header
+            // Company Header (sử dụng thông tin tĩnh)
             XWPFParagraph header = doc.createParagraph();
             header.setAlignment(ParagraphAlignment.CENTER);
             XWPFRun runHeader = header.createRun();
             runHeader.setBold(true);
             runHeader.setFontSize(14);
-            runHeader.setText(branch.getName());
+            runHeader.setText(COMPANY_NAME);
             runHeader.addBreak();
-            runHeader.setText(branch.getAddress() != null ? branch.getAddress() : "");
+            runHeader.setText(COMPANY_ADDRESS);
             runHeader.addBreak();
-            runHeader.setText("Phone: " + (branch.getPhone() != null ? branch.getPhone() : ""));
-
+            runHeader.setText("Phone: " + COMPANY_PHONE);
 
             // Invoice Title
             XWPFParagraph title = doc.createParagraph();
@@ -67,7 +67,7 @@ public class WordGenerator {
             fillInfoCell(infoTable.getRow(4).getCell(0), "Mã giảm giá:");
             fillInfoCell(infoTable.getRow(4).getCell(1),
                     invoice.getVoucher() != null ? invoice.getVoucher().getCode() : "Không có");
-            // Spacing
+
             doc.createParagraph().createRun().addBreak();
 
             // Details Table
@@ -83,14 +83,12 @@ public class WordGenerator {
             table.setWidth("100%");
             setTableColumnWidths(table, new int[]{4000, 1000, 2000, 2000});
 
-            // Header Row
             XWPFTableRow headerRow = table.getRow(0);
             createHeaderCell(headerRow.getCell(0), "Tên món");
             createHeaderCell(headerRow.addNewTableCell(), "Số lượng");
             createHeaderCell(headerRow.addNewTableCell(), "Đơn giá");
             createHeaderCell(headerRow.addNewTableCell(), "Thành tiền");
 
-            // Data Rows
             for (OrderItem item : items) {
                 XWPFTableRow row = table.createRow();
                 row.getCell(0).setText(item.getMenuItem().getName());
@@ -100,7 +98,6 @@ public class WordGenerator {
                 row.getCell(3).setText(currencyFormat.format(lineTotal));
             }
 
-            // Summary (Original, Discount, Total)
             XWPFParagraph summary = doc.createParagraph();
             summary.setAlignment(ParagraphAlignment.RIGHT);
             XWPFRun runSummary = summary.createRun();
@@ -112,7 +109,6 @@ public class WordGenerator {
             runSummary.addBreak();
             runSummary.setText("Tổng tiền: " + currencyFormat.format(invoice.getTotalAmount()) + " VNĐ");
 
-            // Nếu phương thức thanh toán là chuyển khoản, thêm QR code
             if (invoice.getPaymentMethod() == PaymentMethod.TRANSFER) {
                 byte[] qrBytes = fetchQrCode(invoice);
                 XWPFParagraph qrPara = doc.createParagraph();
@@ -169,7 +165,6 @@ public class WordGenerator {
         throw new IOException("Không thể tạo QR code từ API");
     }
 
-    // Helper to set column widths
     private static void setTableColumnWidths(XWPFTable table, int[] widths) {
         CTTbl ttbl = table.getCTTbl();
         CTTblGrid grid = ttbl.getTblGrid() != null ? ttbl.getTblGrid() : ttbl.addNewTblGrid();
@@ -180,7 +175,6 @@ public class WordGenerator {
         }
     }
 
-    // Helper to style header cells
     private static void createHeaderCell(XWPFTableCell cell, String text) {
         XWPFParagraph p = cell.getParagraphs().get(0);
         p.setAlignment(ParagraphAlignment.CENTER);
@@ -189,7 +183,6 @@ public class WordGenerator {
         r.setText(text);
     }
 
-    // Helper to fill info cells
     private static void fillInfoCell(XWPFTableCell cell, String text) {
         XWPFParagraph p = cell.getParagraphs().get(0);
         p.setSpacingAfter(0);
@@ -197,53 +190,5 @@ public class WordGenerator {
         r.setFontSize(12);
         r.setText(text);
     }
-
-    public static void exportSalaryRecords(List<SalaryRecord> records, OutputStream os) throws Exception {
-        try (XWPFDocument doc = new XWPFDocument()) {
-            // Tiêu đề
-            XWPFParagraph title = doc.createParagraph();
-            title.setAlignment(ParagraphAlignment.CENTER);
-            XWPFRun run = title.createRun();
-            run.setText("Bảng lương nhân viên");
-            run.setBold(true);
-            run.setFontSize(16);
-
-            // Tạo bảng: header + n dòng data, 7 cột
-            XWPFTable table = doc.createTable(records.size() + 1, 7);
-
-            // Header
-            XWPFTableRow header = table.getRow(0);
-            header.getCell(0).setText("Tên nhân viên");
-            header.getCell(1).setText("Tháng");
-            header.getCell(2).setText("Lương gộp");
-            header.getCell(3).setText("Ngày nghỉ");
-            header.getCell(4).setText("Số lần đi muộn");
-            header.getCell(5).setText("Số lần tăng ca");
-            header.getCell(6).setText("Lương thực nhận");
-
-            // Data
-            for (int i = 0; i < records.size(); i++) {
-                SalaryRecord r = records.get(i);
-                XWPFTableRow row = table.getRow(i + 1);
-
-                // Lấy tên nhân viên từ SalaryRecord → Employee
-                String employeeName = r.getEmployee().getFullName(); // hoặc getName(), tuỳ tên getter
-                row.getCell(0).setText(employeeName);
-                row.getCell(1).setText(r.getMonth().toString());
-                row.getCell(2).setText(r.getGrossSalary().toString());
-                row.getCell(3).setText(String.valueOf(r.getDaysOff()));
-                row.getCell(4).setText(String.valueOf(r.getLateCount()));
-                row.getCell(5).setText(String.valueOf(r.getOvertimeCount()));
-                row.getCell(6).setText(r.getNetSalary().toString());
-            }
-
-            // Ghi ra OutputStream
-            doc.write(os);
-        }
-    }
-
-
-
-
 
 }

@@ -3,6 +3,7 @@ package com.example.DtaAssigement.entity;
 import com.example.DtaAssigement.ennum.OrderStatus;
 import com.example.DtaAssigement.ennum.OrderType;
 import com.example.DtaAssigement.validation.OnCreate;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;

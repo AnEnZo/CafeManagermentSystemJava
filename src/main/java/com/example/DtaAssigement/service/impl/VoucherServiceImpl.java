@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,14 +33,19 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
     @Override
-    @CachePut(value = "vouchers", key = "#voucher.id")
+    @Caching(
+            put = { @CachePut(value = "vouchers", key = "#result.id") },
+            evict = { @CacheEvict(value = "vouchers", key = "'all'") }
+    )
     public Voucher createVoucher(Voucher voucher) {
         return voucherRepository.save(voucher);
     }
 
     @Override
-    @CachePut(value = "vouchers", key = "#id")
-    @CacheEvict(value = "vouchers", key = "#id")
+    @Caching(
+            put = { @CachePut(value = "vouchers", key = "#id") },
+            evict = { @CacheEvict(value = "vouchers", key = "'all'") }
+    )
     public Voucher updateVoucher(Long id, Voucher updatedVoucher) {
         return voucherRepository.findById(id)
                 .map(voucher -> {
@@ -54,7 +60,12 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
     @Override
-    @CacheEvict(value = "vouchers", key = "#id")
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "vouchers", key = "#id"),
+                    @CacheEvict(value = "vouchers", key = "'all'")
+            }
+    )
     public void deleteVoucher(Long id) {
         voucherRepository.deleteById(id);
     }

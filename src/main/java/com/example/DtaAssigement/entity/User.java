@@ -44,13 +44,6 @@ public class User {
     @Builder.Default
     private Set<UserVoucher> userVouchers = new HashSet<>();
 
-    @OneToMany(mappedBy = "sender", cascade = CascadeType.REMOVE,orphanRemoval = true)
-    private List<Message> messages;
-
-    @ManyToOne
-    @JoinColumn(name = "branch_id",nullable = true)
-    private Branch branch;
-
     @Enumerated(EnumType.STRING)
     private AuthProvider provider;   // LOCAL, GOOGLE, FACEBOOK…
 

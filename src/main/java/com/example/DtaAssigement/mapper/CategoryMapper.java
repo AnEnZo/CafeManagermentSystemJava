@@ -1,7 +1,6 @@
 package com.example.DtaAssigement.mapper;
 
 import com.example.DtaAssigement.dto.CategoryDTO;
-import com.example.DtaAssigement.entity.Branch;
 import com.example.DtaAssigement.entity.Category;
 import org.springframework.stereotype.Component;
 
@@ -12,15 +11,13 @@ public class CategoryMapper {
         return CategoryDTO.builder()
                 .id(entity.getId())
                 .name(entity.getName())
-                .branchName(entity.getBranch().getName())
                 .build();
     }
 
-    public static Category toEntity(CategoryDTO dto, Branch branch) {
+    public static Category toEntity(CategoryDTO dto) {
         Category category = Category.builder()
                 .id(dto.getId())
                 .name(dto.getName())
-                .branch(branch)
                 .build();
         return category;
     }

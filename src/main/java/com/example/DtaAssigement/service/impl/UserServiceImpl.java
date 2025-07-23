@@ -4,19 +4,17 @@ package com.example.DtaAssigement.service.impl;
 
 import com.example.DtaAssigement.dto.UserDTO;
 import com.example.DtaAssigement.ennum.AuthProvider;
-import com.example.DtaAssigement.entity.Branch;
 import com.example.DtaAssigement.entity.User;
 import com.example.DtaAssigement.mapper.UserMapper;
 import com.example.DtaAssigement.payload.RegisterRequest;
-import com.example.DtaAssigement.repository.BranchRepository;
 import com.example.DtaAssigement.repository.RolesRepository;
 import com.example.DtaAssigement.repository.UserRepository;
 import com.example.DtaAssigement.service.UserService;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +22,7 @@ import com.example.DtaAssigement.entity.Roles;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -35,7 +34,7 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
     private RolesRepository roleRepository;
     private PasswordEncoder passwordEncoder;
-    private BranchRepository branchRepo;
+
 
 
     @Override
@@ -67,12 +66,11 @@ public class UserServiceImpl implements UserService {
         user.setRoles(Set.of(userRole));
         user.setPassword(encodedPassword);
         user.setRewardPoints(0);
-        user.setBranch(null);
         user.setProvider(AuthProvider.LOCAL);
         return UserMapper.toDTO(userRepository.save(user));
     }
 
-    public UserDTO createStaff(UserDTO userDTO, Long branchID){
+    public UserDTO createStaff(UserDTO userDTO){
         if (existsByUsername(userDTO.getUsername())) {
             throw new IllegalArgumentException("Username đã có người sử dụng");
         }
@@ -81,25 +79,21 @@ public class UserServiceImpl implements UserService {
         }
         Roles StaffRole = roleRepository.findByName("ROLE_STAFF")
                 .orElseThrow(() -> new RuntimeException("Error: Role STAFF không tồn tại"));
-        Branch StaffBranch = branchRepo.findById(branchID)
-                .orElseThrow(() -> new RuntimeException("Error: Branch không tồn tại"));
+
         // Mã hóa mật khẩu
         String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
 
         User user = UserMapper.toEntity(userDTO);
         user.setRoles(Set.of(StaffRole));
         user.setPassword(encodedPassword);
-        user.setBranch(StaffBranch);
         user.setProvider(AuthProvider.LOCAL);
         return UserMapper.toDTO(userRepository.save(user));
     }
 
-    public UserDTO updateUser(Long id, UserDTO userDTO, Long branchID) {
+    public UserDTO updateUser(Long id, UserDTO userDTO) {
 
         User user = userRepository.findById(id).orElse(null);
         if (user == null) return null;
-        Branch branch = branchRepo.findById(branchID)
-                .orElseThrow(() -> new RuntimeException("Error: Branch không tồn tại"));
 
         // Mã hóa mật khẩu
         String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
@@ -108,7 +102,6 @@ public class UserServiceImpl implements UserService {
         user.setEmail(userDTO.getEmail());
         user.setPhoneNumber(userDTO.getPhoneNumber());
         user.setPassword(encodedPassword);
-        user.setBranch(branch);
         return UserMapper.toDTO(userRepository.save(user));
     }
 
@@ -154,7 +147,6 @@ public class UserServiceImpl implements UserService {
                 .phoneNumber(registerRequest.getPhoneNumber())
                 .rewardPoints(0)
                 .roles(Set.of(userRole)) // gán role mặc định
-                .branch(null)
                 .provider(AuthProvider.LOCAL)
                 .build();
 
@@ -206,6 +198,45 @@ public class UserServiceImpl implements UserService {
                     .build();
             return userRepository.save(u);
         }
+    }
+
+    @Override
+    public UserDTO getUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .map(UserMapper::toDTO)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+    }
+
+    @Override
+    public UserDTO updateCurrentUser(String username, Map<String, Object> updates) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // Cập nhật từng trường nếu được truyền
+        if (updates.containsKey("displayName")) {
+            String dn = (String) updates.get("displayName");
+            if (dn == null || dn.isBlank()) throw new IllegalArgumentException("displayName không được để trống");
+            user.setDisplayName(dn);
+        }
+
+        if (updates.containsKey("email")) {
+            String email = (String) updates.get("email");
+            if (!email.matches("^[\\w-.]+@[\\w-]+(\\.[\\w-]+)+$"))
+                throw new IllegalArgumentException("Email không hợp lệ");
+            if (!email.equals(user.getEmail()) && existsByEmail(email))
+                throw new IllegalArgumentException("Email đã được sử dụng");
+            user.setEmail(email);
+        }
+
+        if (updates.containsKey("phoneNumber")) {
+            String phone = (String) updates.get("phoneNumber");
+            if (!phone.matches("^[0-9]{10,11}$"))
+                throw new IllegalArgumentException("SĐT không hợp lệ");
+            user.setPhoneNumber(phone);
+        }
+
+        User saved = userRepository.save(user);
+        return UserMapper.toDTO(saved);
     }
 
 

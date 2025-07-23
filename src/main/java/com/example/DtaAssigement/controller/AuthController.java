@@ -1,5 +1,6 @@
 package com.example.DtaAssigement.controller;
 
+import com.example.DtaAssigement.dto.ResetPasswordRequest;
 import com.example.DtaAssigement.ennum.AuthProvider;
 import com.example.DtaAssigement.entity.User;
 import com.example.DtaAssigement.payload.JwtResponse;
@@ -7,13 +8,13 @@ import com.example.DtaAssigement.payload.LoginRequest;
 import com.example.DtaAssigement.payload.RegisterRequest;
 import com.example.DtaAssigement.repository.UserRepository;
 import com.example.DtaAssigement.security.JwtTokenUtil;
-import com.example.DtaAssigement.service.MailPasswordService;
+import com.example.DtaAssigement.service.EmailOtpService;
 import com.example.DtaAssigement.service.SmsService;
 import com.example.DtaAssigement.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.MailException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,7 +23,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.*;
-import org.springframework.web.servlet.ModelAndView;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -31,18 +33,13 @@ public class AuthController {
 
 
     private UserService userService;
-
     private UserRepository userRepository;
-
     private AuthenticationManager authenticationManager;
-
     private JwtTokenUtil jwtTokenUtil;
-
-    private MailPasswordService mailPasswordService;
-
     private final SmsService smsService;
-
     private final UserRepository userRepo;
+    private final EmailOtpService emailOtpService;
+
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
@@ -89,51 +86,36 @@ public class AuthController {
                 .body("User registered successfully!");
     }
 
-
-
-    @PostMapping("/forgot-password-mail")
-    public ResponseEntity<?> forgotPassword(@RequestParam("username") String username,
-                                            HttpServletRequest request) {
-
+    @PostMapping("/forgot-password-email")
+    public ResponseEntity<?> forgotPasswordEmail(@RequestBody Map<String,String> body) {
+        String username = body.get("username");
+        if (username == null || username.isBlank()) {
+            return ResponseEntity.badRequest().body("username is required");
+        }
         try {
-            User user = userService.findByUsername(username)
-                    .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user: " + username));
-
-            String email = user.getEmail();
-
-            String appUrl = request.getRequestURL()
-                    .toString().replace(request.getRequestURI(), request.getContextPath());
-            mailPasswordService.createPasswordResetToken(email, appUrl);
-            return ResponseEntity.ok("Đã gửi email hướng dẫn đặt lại mật khẩu");
+            emailOtpService.createAndSendOtp(username);
+            return ResponseEntity.ok(Map.of(
+                    "message", "OTP đã được gửi đến email"));
         } catch (UsernameNotFoundException ex) {
-            // Không tiết lộ email không tồn tại
-            return ResponseEntity.ok("Đã gửi email hướng dẫn đặt lại mật khẩu");
+            // không tiết lộ user có tồn tại hay không
+            return ResponseEntity.ok(Map.of(
+                    "message", "OTP đã được gửi đến email"));
+        } catch (MailException ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Lỗi khi gửi email");
         }
     }
 
-    @GetMapping("/reset-password-mail")
-    public ModelAndView showResetPasswordPage(@RequestParam("token") String token) {
+    @PostMapping("/reset-password-email")
+    public ResponseEntity<?> resetPasswordEmail(@RequestBody ResetPasswordRequest req) {
         try {
-            mailPasswordService.validatePasswordResetToken(token); // kiểm tra token
-            ModelAndView mav = new ModelAndView("reset-password-form"); // trả về tên view (HTML)
-            mav.addObject("token", token);
-            return mav;
+            User user = emailOtpService.validateOtpAndGetUser(req.getUsername(), req.getOtp());
+            userService.updatePassword(user, req.getNewPassword());
+            return ResponseEntity.ok(Map.of("message", "Đặt lại mật khẩu thành công"));
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (IllegalArgumentException e) {
-            return new ModelAndView("error").addObject("message", e.getMessage());
-        }
-    }
-
-
-    @PostMapping("/reset-password-mail")
-    public ResponseEntity<?> resetPassword(@RequestParam("token") String token,
-                                           @RequestParam("password") String password) {
-
-        try {
-            User user = mailPasswordService.validatePasswordResetToken(token);
-            userService.updatePassword(user, password);
-            return ResponseEntity.ok("Đặt lại mật khẩu thành công!");
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 

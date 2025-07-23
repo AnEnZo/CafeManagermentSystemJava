@@ -1,0 +1,90 @@
+.profile-container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+.profile-card {
+  background-color: white;
+  border-radius: 10px;
+  padding: 30px;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+.profile-card h3 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #333;
+}
+
+.profile-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  font-size: 16px;
+  color: #444;
+}
+
+.profile-item svg {
+  margin-right: 10px;
+  color: #666;
+}
+
+.profile-item strong {
+  margin-right: 6px;
+  min-width: 120px;
+}
+
+/* Input khi ở chế độ chỉnh sửa */
+.profile-item input {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+/* Nút sửa */
+.profile-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.profile-actions button {
+  margin-left: 10px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.profile-actions .edit-btn {
+  background-color: #007bff;
+  color: white;
+}
+
+.profile-actions .save-btn {
+  background-color: #28a745;
+  color: white;
+}
+
+.profile-actions .cancel-btn {
+  background-color: #6c757d;
+  color: white;
+}
+
+/* Loading & error */
+.profile-loading,
+.profile-error {
+  text-align: center;
+  font-size: 18px;
+  color: #888;
+  margin-top: 40px;
+}

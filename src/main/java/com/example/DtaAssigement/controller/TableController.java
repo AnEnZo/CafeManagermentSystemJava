@@ -47,26 +47,19 @@ public class TableController {
         return ResponseEntity.ok(updated);
     }
 
-    @DeleteMapping
+    @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<RestaurantTableDTO> deleteTable(@PathVariable Long id){
         boolean deleted = tableService.deleteTable(id);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 
-    @GetMapping("/stats")
-    @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
-    public ResponseEntity<Map<String, Long>> getTableStatistics(@RequestParam String branchName) {
-        Map<String, Long> stats = new HashMap<>();
-        stats.put("totalTables", tableService.getTotalTables(branchName));
-        stats.put("availableTables", tableService.getAvailableTables(branchName));
-        return ResponseEntity.ok(stats);
-    }
+
 
     @GetMapping("/available")
     @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
-    public ResponseEntity<List<RestaurantTableDTO>> getAvailableTables(@RequestParam String branchName) {
-        return ResponseEntity.ok(tableService.getListAvailableTables(branchName));
+    public ResponseEntity<List<RestaurantTableDTO>> getAvailableTables() {
+        return ResponseEntity.ok(tableService.getListAvailableTables());
     }
 
 }

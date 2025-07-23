@@ -1,0 +1,19 @@
+.invoice-page {
+  background-color: #f9f9f9;
+  min-height: 100vh;
+}
+
+.table-responsive {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.table thead th {
+  background: linear-gradient(90deg, #582c03, #2a1209);
+  color: white;
+  border: none;
+}
+
+.table tbody tr:hover {
+  background-color: #f1f1f1;
+}

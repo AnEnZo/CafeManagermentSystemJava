@@ -1,0 +1,58 @@
+/* OrderDetailPage.css */
+
+/* bo góc & shadow cho toàn page */
+.container-fluid {
+  background-color: #f9f9f9;
+  min-height: 100vh;
+}
+
+/* CategoryList */
+.list-group-item.active {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  color: #fff;
+}
+
+/* Menu cards */
+.menu-card {
+  width: 160px;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.menu-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+}
+.menu-card .card-img-top {
+  object-fit: cover;
+  height: 100px;
+}
+.menu-card .card-body {
+  padding: 0.75rem;
+}
+
+/* Table styling */
+.table-responsive {
+  background: #fff;
+}
+.table thead th {
+  border-bottom: none;
+}
+.table-dark th {
+  background: linear-gradient(90deg, #8b4513, #cd7f32);
+  border: none;
+  color: #fff;
+}
+.table tbody tr:hover {
+  background-color: #f1f1f1;
+}
+.table tfoot {
+  border-top: 2px solid #dee2e6;
+}
+
+/* Button sửa lại khoảng cách */
+.btn-group .btn {
+  width: 2rem;
+  padding: 0;
+}

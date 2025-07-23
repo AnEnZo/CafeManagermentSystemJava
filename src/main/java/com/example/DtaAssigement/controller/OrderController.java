@@ -30,6 +30,18 @@ public class OrderController {
 
     private final OrderService orderService;
 
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
+    public ResponseEntity<Order> getOrderById(@PathVariable Long id) {
+        try {
+            Order order = orderService.getOrderById(id);
+            return ResponseEntity.ok(order);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+
     @PostMapping
     @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
     public ResponseEntity<Order> createOrder(@Validated(OnCreate.class) @RequestBody OrderCreateDTO dto) {
@@ -97,26 +109,11 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
-    @GetMapping("/by-branch")
-    @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
-    public ResponseEntity<Page<Order>> getOrdersByBranch(
-            @RequestParam Long branchId,
-            @ParameterObject
-            @PageableDefault(
-                    page = 0,
-                    size = 10,
-                    sort = "createdAt",
-                    direction = Sort.Direction.DESC
-            ) Pageable pageable
-    ) {
-        Page<Order> orders = orderService.getOrdersByBranch(branchId, pageable);
-        return ResponseEntity.ok(orders);
-    }
 
 
-    @DeleteMapping
-    @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<Void> deleteOrder(@RequestParam Long id) {
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+    public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
         boolean deleted = orderService.deleteOrder(id);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
@@ -126,6 +123,17 @@ public class OrderController {
     public ResponseEntity<Order> serveOrder(@PathVariable Long orderId) {
         Order updated = orderService.updateOrderStatus(orderId, OrderStatus.SERVED);
         return ResponseEntity.ok(updated);
+    }
+
+    @GetMapping("/latest-by-table/{tableId}")
+    @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
+    public ResponseEntity<Order> getLatestOrderByTable(@PathVariable Long tableId) {
+        try {
+            Order order = orderService.getLatestOrderByTableId(tableId);
+            return ResponseEntity.ok(order);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
 

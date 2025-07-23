@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import com.example.DtaAssigement.ennum.OrderStatus;
 
 
 import java.math.BigDecimal;
@@ -18,11 +19,16 @@ import java.util.Optional;
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
 
     @Query("""
-            SELECT i.menuItem.name AS itemName, SUM(i.quantity) AS quantitySold
-            FROM OrderItem i
-            GROUP BY i.menuItem.name
-            ORDER BY SUM(i.quantity) DESC
-            """)
+        SELECT i.menuItem.name AS itemName,
+               SUM(i.quantity) AS quantitySold,
+               i.menuItem.price AS price,
+               i.menuItem.imageUrl AS imageUrl
+        FROM OrderItem i
+        JOIN i.order o
+        WHERE o.status = OrderStatus.PAID
+        GROUP BY i.menuItem.name, i.menuItem.price, i.menuItem.imageUrl
+        ORDER BY SUM(i.quantity) DESC
+        """)
     Page<ItemStatsDTO> findTopSellingItems(Pageable topN);
 
     @Query("SELECT SUM(oi.menuItem.price * oi.quantity) FROM OrderItem oi WHERE oi.order.id = :orderId")

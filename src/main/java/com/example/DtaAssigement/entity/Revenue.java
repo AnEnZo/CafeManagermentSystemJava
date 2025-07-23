@@ -40,9 +40,5 @@ public class Revenue {
     )
     private List<Invoice> invoices;
 
-    @ManyToOne
-    @JoinColumn(name = "branch_id", nullable = false)
-    @NotNull
-    private Branch branch;
 
 }

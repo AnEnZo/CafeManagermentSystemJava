@@ -10,7 +10,6 @@ public interface TableService {
     RestaurantTableDTO createTable(RestaurantTableDTO tableDTO);
     RestaurantTable updateTableStatus(Long id, boolean available);
     boolean deleteTable(Long id);
-    long getTotalTables(String branchName);
-    long getAvailableTables(String branchName);
-    List<RestaurantTableDTO> getListAvailableTables(String branchName);
+    ;
+    List<RestaurantTableDTO> getListAvailableTables();
 }

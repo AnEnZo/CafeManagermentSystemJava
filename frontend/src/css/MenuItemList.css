@@ -1,0 +1,8 @@
+.menu-pagination-container {
+  overflow: hidden;
+  position: relative;
+}
+.page-content {
+  display: flex;
+  flex-wrap: wrap;
+}

@@ -1,8 +1,10 @@
 package com.example.DtaAssigement.repository;
 
+import com.example.DtaAssigement.entity.User;
 import com.example.DtaAssigement.entity.UserVoucher;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserVoucherRepository extends JpaRepository<UserVoucher,Long> {
@@ -11,4 +13,5 @@ public interface UserVoucherRepository extends JpaRepository<UserVoucher,Long> {
     boolean existsByCode(String code);
     UserVoucher getById(Long id);
     Optional<UserVoucher> findByCode(String code);
+    List<UserVoucher> findByUser(User user);
 }

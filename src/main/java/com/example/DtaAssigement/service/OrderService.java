@@ -14,9 +14,10 @@ public interface OrderService {
     OrderItem removeItemFromOrder(Long orderId, Long menuItemId, int quantityToRemove);
     List<Order> getOrdersByStatus(OrderStatus status);
     Page<Order> getAllOrders(Pageable pageable);
-    Page<Order> getOrdersByBranch(Long branchId, Pageable pageable);
     boolean deleteOrder(Long id);
     Order updateOrderStatus(Long orderId, OrderStatus status);
     Order createTakeawayOrder();
+    Order getOrderById(Long id);
+    Order getLatestOrderByTableId(Long tableId);
 
 }

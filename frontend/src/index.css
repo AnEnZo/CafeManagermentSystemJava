@@ -24,8 +24,6 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
 }
@@ -37,21 +35,85 @@ h1 {
 
 button {
   border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
+  border: 2px solid #6f4e37; /* Nâu cà phê đậm */
+  padding: 0.8em 1.8em;
   font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+  font-weight: 600;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  background: linear-gradient(135deg, #deb887 0%, #cd853f 100%); /* Gradient từ màu cà phê sữa đến nâu vàng */
+  color: #3e2723; /* Nâu đậm như hạt cà phê rang */
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow:
+    0 4px 12px rgba(111, 78, 55, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2); /* Hiệu ứng ánh sáng bên trong */
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
 }
+
+button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
 button:hover {
-  border-color: #646cff;
+  background: linear-gradient(135deg, #d2691e 0%, #a0522d 100%); /* Gradient nâu cam đậm hơn */
+  border-color: #5d4037;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 20px rgba(111, 78, 55, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
+
+button:hover::before {
+  left: 100%;
+}
+
+button:active {
+  transform: translateY(0);
+  box-shadow:
+    0 2px 8px rgba(111, 78, 55, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: 3px solid #d2691e;
+  outline-offset: 3px;
+}
+
+/* Thêm style cho nút secondary (tùy chọn) */
+button.secondary {
+  background: linear-gradient(135deg, #f5f5dc 0%, #ddd8c4 100%); /* Màu kem */
+  border-color: #8b7355;
+  color: #5d4037;
+}
+
+button.secondary:hover {
+  background: linear-gradient(135deg, #e6e6d3 0%, #d4c4a8 100%);
+  border-color: #6d5125;
+  color: #3e2723;
+}
+
+/* Thêm style cho nút accent (màu cà phê đậm) */
+button.accent {
+  background: linear-gradient(135deg, #8b4513 0%, #654321 100%);
+  border-color: #4a2c17;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+button.accent:hover {
+  background: linear-gradient(135deg, #a0522d 0%, #8b4513 100%);
+  border-color: #3e2723;
 }
 
 @media (prefers-color-scheme: light) {
@@ -63,6 +125,17 @@ button:focus-visible {
     color: #747bff;
   }
   button {
-    background-color: #f9f9f9;
-  }
+      background: linear-gradient(135deg, #deb887 0%, #d2b48c 100%);
+      border-color: #a0522d;
+      color: #3e2723;
+      box-shadow:
+        0 4px 12px rgba(160, 82, 45, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #d2691e 0%, #cd853f 100%);
+      border-color: #8b4513;
+      color: #fff;
+    }
 }

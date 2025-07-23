@@ -2,11 +2,10 @@ package com.example.DtaAssigement.controller;
 
 import com.example.DtaAssigement.dto.MenuItemDTO;
 import com.example.DtaAssigement.entity.MenuItem;
-import com.example.DtaAssigement.entity.MenuItemIngredient;
+import com.example.DtaAssigement.mapper.MenuItemMapper;
 import com.example.DtaAssigement.service.MenuItemService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/menu-items")
@@ -26,17 +26,23 @@ public class MenuItemController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('STAFF','ADMIN','USER')")
-    public List<MenuItem> getAll() {
-        return service.getAllMenuItems();
+    public ResponseEntity<List<MenuItemDTO>> getAll() {
+        List<MenuItemDTO> dtos = service.getAllMenuItems().stream()
+                .map(MenuItemMapper::toDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
+
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('STAFF','ADMIN','USER')")
-    public ResponseEntity<MenuItem> getById(@PathVariable Long id) {
+    public ResponseEntity<MenuItemDTO> getById(@PathVariable Long id) {
         return service.getMenuItemById(id)
+                .map(MenuItemMapper::toDTO)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN')")
@@ -62,26 +68,15 @@ public class MenuItemController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{menuItemId}/ingredients")
-    public ResponseEntity<MenuItemIngredient> addIngredientToMenuItem(
-            @PathVariable Long menuItemId,
-            @RequestParam("ingredientId") Long ingredientId,
-            @RequestParam("quantityUsed") double quantityUsed) {
-
-        MenuItemIngredient added = menuItemService.addIngredient(menuItemId, ingredientId, quantityUsed);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(added);
+    @GetMapping("/category/{name}")
+    @PreAuthorize("hasAnyRole('STAFF','ADMIN','USER')")
+    public ResponseEntity<List<MenuItemDTO>> getByCategoryName(@PathVariable("name") String name) {
+        List<MenuItemDTO> dtos = service.getMenuItemsByCategory(name).stream()
+                .map(MenuItemMapper::toDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
-    @DeleteMapping("/{menuItemId}/ingredients/{menuItemIngredientId}")
-    public ResponseEntity<Void> removeIngredientFromMenuItem(
-            @PathVariable Long menuItemId,
-            @PathVariable Long menuItemIngredientId) {
-
-        menuItemService.removeIngredient(menuItemId, menuItemIngredientId);
-        return ResponseEntity.noContent().build();
-    }
 
 }
 
